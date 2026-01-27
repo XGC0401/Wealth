@@ -1,0 +1,399 @@
+<template>
+  <div class="community-page">
+    <div class="page-header">
+      <h1>社群分享</h1>
+      <el-button type="primary" :icon="Plus" @click="showPostDialog = true">
+        分享動態
+      </el-button>
+    </div>
+
+    <!-- Posts List -->
+    <div class="posts-container">
+      <el-card
+        v-for="post in posts"
+        :key="post.id"
+        class="post-card"
+        shadow="hover"
+      >
+        <div class="post-header">
+          <div class="user-info">
+            <el-avatar :size="40">
+              <el-icon><User /></el-icon>
+            </el-avatar>
+            <div class="user-details">
+              <div class="username">{{ post.username }}</div>
+              <div class="post-time">{{ formatTime(post.createdAt) }}</div>
+            </div>
+          </div>
+          <el-dropdown v-if="post.isMine">
+            <el-icon class="more-icon"><MoreFilled /></el-icon>
+            <template #dropdown>
+              <el-dropdown-menu>
+                <el-dropdown-item @click="deletePost(post.id)">
+                  刪除
+                </el-dropdown-item>
+              </el-dropdown-menu>
+            </template>
+          </el-dropdown>
+        </div>
+
+        <div class="post-content">
+          <p>{{ post.content }}</p>
+          <div v-if="post.image" class="post-image">
+            <img :src="post.image" alt="Post image" />
+          </div>
+          <el-tag v-if="post.category" type="info" size="small" class="post-category">
+            #{{ post.category }}
+          </el-tag>
+        </div>
+
+        <div class="post-stats">
+          <div class="stat-item">
+            <el-icon :size="18" color="#f56c6c"><StarFilled /></el-icon>
+            <span>{{ post.likes || 0 }}</span>
+          </div>
+          <div class="stat-item">
+            <el-icon :size="18" color="#409eff"><ChatDotRound /></el-icon>
+            <span>{{ post.comments || 0 }}</span>
+          </div>
+          <div class="stat-item">
+            <el-icon :size="18" color="#67c23a"><Share /></el-icon>
+            <span>{{ post.shares || 0 }}</span>
+          </div>
+        </div>
+
+        <div class="post-actions">
+          <el-button
+            text
+            :icon="post.isLiked ? StarFilled : Star"
+            @click="toggleLike(post.id)"
+          >
+            {{ post.isLiked ? '已點讚' : '點讚' }}
+          </el-button>
+          <el-button text :icon="ChatDotRound">
+            留言
+          </el-button>
+          <el-button text :icon="Share">
+            分享
+          </el-button>
+        </div>
+      </el-card>
+    </div>
+
+    <el-empty
+      v-if="posts.length === 0"
+      description="還沒有任何動態"
+      :image-size="200"
+    />
+
+    <!-- Create Post Dialog -->
+    <el-dialog
+      v-model="showPostDialog"
+      title="分享動態"
+      width="600px"
+    >
+      <el-form
+        ref="postFormRef"
+        :model="postForm"
+        :rules="rules"
+        label-width="80px"
+      >
+        <el-form-item label="分享內容" prop="content">
+          <el-input
+            v-model="postForm.content"
+            type="textarea"
+            :rows="6"
+            placeholder="分享您的健康心得、運動成果或飲食經驗..."
+            maxlength="500"
+            show-word-limit
+          />
+        </el-form-item>
+
+        <el-form-item label="分類標籤">
+          <el-select v-model="postForm.category" placeholder="選擇分類（可選）" style="width: 100%">
+            <el-option label="運動健身" value="運動健身" />
+            <el-option label="健康飲食" value="健康飲食" />
+            <el-option label="心理健康" value="心理健康" />
+            <el-option label="生活分享" value="生活分享" />
+            <el-option label="經驗交流" value="經驗交流" />
+          </el-select>
+        </el-form-item>
+      </el-form>
+
+      <template #footer>
+        <el-button @click="showPostDialog = false">取消</el-button>
+        <el-button type="primary" @click="handleCreatePost">
+          發布
+        </el-button>
+      </template>
+    </el-dialog>
+  </div>
+</template>
+
+<script setup>
+import { ref, reactive } from 'vue'
+import { useUserStore } from '@/stores/user'
+import { ElMessage, ElMessageBox } from 'element-plus'
+import { 
+  Plus, User, MoreFilled, ChatDotRound, 
+  Share, Star, StarFilled 
+} from '@element-plus/icons-vue'
+
+const userStore = useUserStore()
+const showPostDialog = ref(false)
+const postFormRef = ref(null)
+
+const posts = ref(JSON.parse(localStorage.getItem('communityPosts') || '[]'))
+
+const savePosts = () => {
+  localStorage.setItem('communityPosts', JSON.stringify(posts.value))
+}
+
+// Add some sample posts if empty
+if (posts.value.length === 0) {
+  posts.value = [
+    {
+      id: 1,
+      username: '健康達人',
+      content: '今天完成了10公里慢跑！感覺超棒的，大家一起加油！💪',
+      category: '運動健身',
+      likes: 15,
+      comments: 3,
+      shares: 2,
+      isLiked: false,
+      isMine: false,
+      createdAt: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString()
+    },
+    {
+      id: 2,
+      username: '營養師小美',
+      content: '分享一個簡單又健康的早餐食譜：燕麥片 + 藍莓 + 堅果，營養滿分！',
+      category: '健康飲食',
+      likes: 28,
+      comments: 7,
+      shares: 5,
+      isLiked: false,
+      isMine: false,
+      createdAt: new Date(Date.now() - 5 * 60 * 60 * 1000).toISOString()
+    },
+    {
+      id: 3,
+      username: '冥想愛好者',
+      content: '每天早晨的冥想練習讓我一整天都充滿能量。強烈推薦大家試試！🧘‍♀️',
+      category: '心理健康',
+      likes: 20,
+      comments: 4,
+      shares: 3,
+      isLiked: false,
+      isMine: false,
+      createdAt: new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString()
+    }
+  ]
+  savePosts()
+}
+
+const postForm = reactive({
+  content: '',
+  category: ''
+})
+
+const rules = {
+  content: [
+    { required: true, message: '請輸入分享內容', trigger: 'blur' },
+    { min: 10, message: '內容至少需要 10 個字', trigger: 'blur' }
+  ]
+}
+
+const handleCreatePost = async () => {
+  if (!postFormRef.value) return
+  
+  await postFormRef.value.validate((valid) => {
+    if (valid) {
+      const newPost = {
+        id: Date.now(),
+        username: userStore.currentUser?.name || '使用者',
+        content: postForm.content,
+        category: postForm.category,
+        likes: 0,
+        comments: 0,
+        shares: 0,
+        isLiked: false,
+        isMine: true,
+        createdAt: new Date().toISOString()
+      }
+      
+      posts.value.unshift(newPost)
+      savePosts()
+      ElMessage.success('動態已發布')
+      showPostDialog.value = false
+      resetForm()
+    }
+  })
+}
+
+const toggleLike = (id) => {
+  const post = posts.value.find(p => p.id === id)
+  if (post) {
+    post.isLiked = !post.isLiked
+    post.likes = post.isLiked ? (post.likes || 0) + 1 : (post.likes || 0) - 1
+    savePosts()
+  }
+}
+
+const deletePost = async (id) => {
+  try {
+    await ElMessageBox.confirm('確定要刪除這則動態嗎？', '確認刪除', {
+      confirmButtonText: '確定',
+      cancelButtonText: '取消',
+      type: 'warning'
+    })
+    posts.value = posts.value.filter(p => p.id !== id)
+    savePosts()
+    ElMessage.success('已刪除')
+  } catch {
+    // User cancelled
+  }
+}
+
+const resetForm = () => {
+  Object.assign(postForm, {
+    content: '',
+    category: ''
+  })
+  postFormRef.value?.resetFields()
+}
+
+const formatTime = (date) => {
+  const now = new Date()
+  const postDate = new Date(date)
+  const diff = now - postDate
+  const minutes = Math.floor(diff / 60000)
+  const hours = Math.floor(minutes / 60)
+  const days = Math.floor(hours / 24)
+
+  if (minutes < 1) return '剛剛'
+  if (minutes < 60) return `${minutes} 分鐘前`
+  if (hours < 24) return `${hours} 小時前`
+  if (days < 7) return `${days} 天前`
+  
+  return postDate.toLocaleDateString('zh-TW')
+}
+</script>
+
+<style scoped>
+.community-page {
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+.page-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.page-header h1 {
+  font-size: 28px;
+  color: #303133;
+}
+
+.posts-container {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.post-card {
+  transition: transform 0.3s;
+}
+
+.post-card:hover {
+  transform: translateY(-2px);
+}
+
+.post-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 15px;
+}
+
+.user-info {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+}
+
+.user-details {
+  display: flex;
+  flex-direction: column;
+}
+
+.username {
+  font-weight: 600;
+  color: #303133;
+  font-size: 15px;
+}
+
+.post-time {
+  font-size: 13px;
+  color: #909399;
+}
+
+.more-icon {
+  cursor: pointer;
+  font-size: 20px;
+  color: #909399;
+}
+
+.more-icon:hover {
+  color: #606266;
+}
+
+.post-content {
+  margin-bottom: 15px;
+}
+
+.post-content p {
+  color: #303133;
+  line-height: 1.8;
+  margin-bottom: 12px;
+  white-space: pre-wrap;
+}
+
+.post-image {
+  margin: 15px 0;
+}
+
+.post-image img {
+  width: 100%;
+  border-radius: 8px;
+}
+
+.post-category {
+  margin-top: 10px;
+}
+
+.post-stats {
+  display: flex;
+  gap: 20px;
+  padding: 12px 0;
+  border-top: 1px solid #e4e7ed;
+  border-bottom: 1px solid #e4e7ed;
+  margin-bottom: 10px;
+}
+
+.stat-item {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  color: #606266;
+  font-size: 14px;
+}
+
+.post-actions {
+  display: flex;
+  justify-content: space-around;
+}
+</style>
