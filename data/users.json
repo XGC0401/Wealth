@@ -1,0 +1,19 @@
+{
+  "users": [
+    {
+      "id": "user_test_1770271882999",
+      "username": "test",
+      "email": "test@test.com",
+      "name": "test",
+      "password": "123456",
+      "createdAt": "2026-02-05T06:11:22.999Z"
+    }
+  ],
+  "sessions": {
+    "token_1770271882999_absw5h47f": {
+      "userId": "user_test_1770271882999",
+      "username": "test",
+      "createdAt": "2026-02-05T06:11:22.999Z"
+    }
+  }
+}

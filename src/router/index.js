@@ -62,9 +62,10 @@ const router = createRouter({
           component: () => import('@/views/RandomGenerator.vue')
         },
         {
-          path: 'chatroom',
-          name: 'ChatRoom',
-          component: () => import('@/views/ChatRoom.vue')
+          path: 'booking',
+          name: 'Booking',
+          component: () => import('@/views/Booking.vue'),
+          meta: { title: '醫院與診所預約' }
         },
         {
           path: 'profile',

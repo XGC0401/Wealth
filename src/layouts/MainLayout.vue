@@ -77,9 +77,9 @@
               <span>隨機推薦</span>
             </el-menu-item>
             
-            <el-menu-item index="/chatroom">
-              <el-icon><ChatDotRound /></el-icon>
-              <span>聊天室</span>
+            <el-menu-item index="/booking">
+              <el-icon><Calendar /></el-icon>
+              <span>醫院預約</span>
             </el-menu-item>
             
             <el-menu-item index="/profile">
