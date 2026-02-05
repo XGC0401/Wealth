@@ -66,7 +66,6 @@
             <div class="plan-progress">
               <div class="progress-header">
                 <span>完成度</span>
-                <span>{{ plan.progress }}%</span>
               </div>
               <el-progress :percentage="plan.progress" :color="getProgressColor(plan.progress)" />
             </div>
@@ -220,6 +219,8 @@ const togglePlanStatus = (id) => {
     plan.active = !plan.active
     if (!plan.active) {
       plan.progress = 100
+    } else {
+      plan.progress = 0
     }
     savePlans()
     ElMessage.success(plan.active ? '計畫已重新啟動' : '計畫已標記為完成')
