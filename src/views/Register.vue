@@ -18,7 +18,7 @@
           <el-form-item prop="username">
             <el-input
               v-model="registerForm.username"
-              placeholder="使用者名稱"
+              placeholder="登入名稱"
               size="large"
               :prefix-icon="User"
             />
@@ -116,8 +116,8 @@ const validateConfirmPassword = (rule, value, callback) => {
 
 const rules = {
   username: [
-    { required: true, message: '請輸入使用者名稱', trigger: 'blur' },
-    { min: 3, message: '使用者名稱至少 3 個字元', trigger: 'blur' }
+    { required: true, message: '請輸入登入名稱', trigger: 'blur' },
+    { min: 3, message: '登入名稱至少 3 個字元', trigger: 'blur' }
   ],
   name: [
     { required: true, message: '請輸入顯示名稱', trigger: 'blur' }

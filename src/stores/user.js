@@ -1,7 +1,7 @@
 import { defineStore } from 'pinia'
 import axios from 'axios'
 
-const API_URL = 'http://localhost:3100/api'
+const API_URL = '/api'
 
 export const useUserStore = defineStore('user', {
   state: () => ({
@@ -102,6 +102,34 @@ export const useUserStore = defineStore('user', {
       } catch (e) {
         // Stores might not be initialized
         console.warn('Error clearing stores:', e)
+      }
+    },
+
+    async updateProfile(updateData) {
+      try {
+        console.log('Updating profile with data:', { ...updateData, profilePicture: updateData.profilePicture ? 'base64_data' : null })
+        const response = await axios.put(`${API_URL}/auth/update-profile`, {
+          token: this.token,
+          ...updateData
+        })
+        
+        console.log('Update response:', response.data)
+        
+        if (response.data.success) {
+          // Update local user data
+          this.user = response.data.user
+          localStorage.setItem('user', JSON.stringify(response.data.user))
+          
+          return { success: true, message: response.data.message }
+        }
+        
+        return { success: false, message: response.data.message }
+      } catch (error) {
+        console.error('Update profile error:', error)
+        if (error.response?.data?.message) {
+          return { success: false, message: error.response.data.message }
+        }
+        return { success: false, message: '更新失敗' }
       }
     }
   }

@@ -18,7 +18,11 @@
               </span>
               <template #dropdown>
                 <el-dropdown-menu>
-                  <el-dropdown-item @click="handleLogout">
+                  <el-dropdown-item @click="router.push('/settings')">
+                    <el-icon><Setting /></el-icon>
+                    設定
+                  </el-dropdown-item>
+                  <el-dropdown-item divided @click="handleLogout">
                     <el-icon><SwitchButton /></el-icon>
                     登出
                   </el-dropdown-item>
@@ -109,7 +113,7 @@ const router = useRouter()
 const userStore = useUserStore()
 
 const activeMenu = computed(() => route.path)
-const userAvatar = computed(() => null)
+const userAvatar = computed(() => userStore.currentUser?.profilePicture || null)
 
 const handleLogout = async () => {
   try {

@@ -12,7 +12,8 @@ const PORT = 3100
 const USERS_FILE = path.join(__dirname, 'data', 'users.json')
 
 app.use(cors())
-app.use(express.json())
+app.use(express.json({ limit: '10mb' })) // Increase limit for base64 images
+app.use(express.urlencoded({ limit: '10mb', extended: true }))
 
 // Helper function to read users data
 async function readUsersData() {
@@ -145,6 +146,65 @@ app.post('/api/auth/verify', async (req, res) => {
 
     const { password: _, ...userWithoutPassword } = user
     res.json({ success: true, user: userWithoutPassword })
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message })
+  }
+})
+
+// Update user profile
+app.put('/api/auth/update-profile', async (req, res) => {
+  try {
+    const { token, username, name, email, profilePicture, currentPassword, newPassword } = req.body
+    const data = await readUsersData()
+
+    // Verify token
+    const session = data.sessions[token]
+    if (!session) {
+      return res.status(401).json({ success: false, message: '請重新登入' })
+    }
+
+    // Find user
+    const userIndex = data.users.findIndex(u => u.id === session.userId)
+    if (userIndex === -1) {
+      return res.status(404).json({ success: false, message: '找不到使用者' })
+    }
+
+    const user = data.users[userIndex]
+
+    // Check if username is being changed and if it's already taken
+    if (username && username !== user.username) {
+      const existingUser = data.users.find(u => u.username === username && u.id !== user.id)
+      if (existingUser) {
+        return res.status(400).json({ success: false, message: '使用者名稱已被使用' })
+      }
+    }
+
+    // If changing password, verify current password
+    if (currentPassword && newPassword) {
+      if (user.password !== currentPassword) {
+        return res.status(400).json({ success: false, message: '當前密碼不正確' })
+      }
+      user.password = newPassword
+    }
+
+    // Update user data
+    if (username) user.username = username
+    if (name) user.name = name
+    if (email) user.email = email
+    if (profilePicture !== undefined) user.profilePicture = profilePicture
+    
+    user.updatedAt = new Date().toISOString()
+
+    data.users[userIndex] = user
+    await writeUsersData(data)
+
+    // Return updated user without password
+    const { password: _, ...userWithoutPassword } = user
+    res.json({ 
+      success: true, 
+      user: userWithoutPassword,
+      message: '個人資料已更新'
+    })
   } catch (error) {
     res.status(500).json({ success: false, message: error.message })
   }
