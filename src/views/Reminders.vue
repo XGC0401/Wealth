@@ -1,9 +1,9 @@
 <template>
   <div class="reminders-page">
     <div class="page-header">
-      <h1>提醒設置</h1>
+      <h1>{{ $t('reminders.title') }}</h1>
       <el-button type="primary" :icon="Plus" @click="showAddDialog = true">
-        新增提醒
+        {{ $t('reminders.addReminder') }}
       </el-button>
     </div>
 
@@ -48,7 +48,7 @@
             @click="handleDelete(reminder.id)"
             class="delete-btn"
           >
-            刪除
+            {{ $t('common.delete') }}
           </el-button>
         </el-card>
       </el-col>
@@ -56,14 +56,14 @@
 
     <el-empty
       v-if="remindersStore.reminders.length === 0"
-      description="還沒有設置任何提醒"
+      :description="$t('reminders.noReminders')"
       :image-size="200"
     />
 
     <!-- Add Reminder Dialog -->
     <el-dialog
       v-model="showAddDialog"
-      title="新增提醒"
+      :title="$t('reminders.addDialogTitle')"
       width="500px"
     >
       <el-form
@@ -72,67 +72,67 @@
         :rules="rules"
         label-width="100px"
       >
-        <el-form-item label="提醒標題" prop="title">
-          <el-input v-model="reminderForm.title" placeholder="例如：喝水提醒" />
+        <el-form-item :label="$t('reminders.reminderTitle')" prop="title">
+          <el-input v-model="reminderForm.title" :placeholder="$t('reminders.titlePlaceholder')" />
         </el-form-item>
 
-        <el-form-item label="提醒類型" prop="type">
-          <el-select v-model="reminderForm.type" placeholder="請選擇類型" style="width: 100%">
-            <el-option label="喝水" value="hydration">
+        <el-form-item :label="$t('reminders.reminderType')" prop="type">
+          <el-select v-model="reminderForm.type" :placeholder="$t('reminders.typePlaceholder')" style="width: 100%">
+            <el-option :label="$t('reminders.typeHydration')" value="hydration">
               <el-icon><Coffee /></el-icon>
-              <span style="margin-left: 10px">喝水</span>
+              <span style="margin-left: 10px">{{ $t('reminders.typeHydration') }}</span>
             </el-option>
-            <el-option label="運動" value="exercise">
+            <el-option :label="$t('reminders.typeExercise')" value="exercise">
               <el-icon><Bicycle /></el-icon>
-              <span style="margin-left: 10px">運動</span>
+              <span style="margin-left: 10px">{{ $t('reminders.typeExercise') }}</span>
             </el-option>
-            <el-option label="飲食" value="meal">
+            <el-option :label="$t('reminders.typeMeal')" value="meal">
               <el-icon><Food /></el-icon>
-              <span style="margin-left: 10px">飲食</span>
+              <span style="margin-left: 10px">{{ $t('reminders.typeMeal') }}</span>
             </el-option>
-            <el-option label="休息" value="rest">
+            <el-option :label="$t('reminders.typeRest')" value="rest">
               <el-icon><Moon /></el-icon>
-              <span style="margin-left: 10px">休息</span>
+              <span style="margin-left: 10px">{{ $t('reminders.typeRest') }}</span>
             </el-option>
-            <el-option label="冥想" value="meditation">
+            <el-option :label="$t('reminders.typeMeditation')" value="meditation">
               <el-icon><Sunny /></el-icon>
-              <span style="margin-left: 10px">冥想</span>
+              <span style="margin-left: 10px">{{ $t('reminders.typeMeditation') }}</span>
             </el-option>
           </el-select>
         </el-form-item>
 
-        <el-form-item label="提醒時間" prop="time">
+        <el-form-item :label="$t('reminders.reminderTime')" prop="time">
           <el-time-picker
             v-model="reminderForm.time"
             format="HH:mm"
-            placeholder="選擇時間"
+            :placeholder="$t('reminders.selectTime')"
             style="width: 100%"
           />
         </el-form-item>
 
-        <el-form-item label="重複頻率" prop="frequency">
-          <el-select v-model="reminderForm.frequency" placeholder="請選擇頻率" style="width: 100%">
-            <el-option label="每天" value="daily" />
-            <el-option label="工作日" value="weekdays" />
-            <el-option label="週末" value="weekends" />
-            <el-option label="自訂..." value="custom" />
+        <el-form-item :label="$t('reminders.frequency')" prop="frequency">
+          <el-select v-model="reminderForm.frequency" :placeholder="$t('reminders.frequencyPlaceholder')" style="width: 100%">
+            <el-option :label="$t('reminders.daily')" value="daily" />
+            <el-option :label="$t('reminders.weekdays')" value="weekdays" />
+            <el-option :label="$t('reminders.weekends')" value="weekends" />
+            <el-option :label="$t('reminders.custom')" value="custom" />
           </el-select>
         </el-form-item>
 
-        <el-form-item label="描述">
+        <el-form-item :label="$t('reminders.description')">
           <el-input
             v-model="reminderForm.description"
             type="textarea"
             :rows="3"
-            placeholder="添加提醒描述..."
+            :placeholder="$t('reminders.descriptionPlaceholder')"
           />
         </el-form-item>
       </el-form>
 
       <template #footer>
-        <el-button @click="showAddDialog = false">取消</el-button>
+        <el-button @click="showAddDialog = false">{{ $t('common.cancel') }}</el-button>
         <el-button type="primary" @click="handleAddReminder">
-          確定
+          {{ $t('common.confirm') }}
         </el-button>
       </template>
     </el-dialog>
@@ -147,7 +147,9 @@ import {
   Plus, Delete, Clock, Calendar, 
   Coffee, Bicycle, Food, Moon, Sunny 
 } from '@element-plus/icons-vue'
+import { useI18n } from 'vue-i18n'
 
+const { t } = useI18n()
 const remindersStore = useRemindersStore()
 const showAddDialog = ref(false)
 const reminderFormRef = ref(null)
@@ -162,10 +164,10 @@ const reminderForm = reactive({
 })
 
 const rules = {
-  title: [{ required: true, message: '請輸入提醒標題', trigger: 'blur' }],
-  type: [{ required: true, message: '請選擇提醒類型', trigger: 'change' }],
-  time: [{ required: true, message: '請選擇提醒時間', trigger: 'change' }],
-  frequency: [{ required: true, message: '請選擇重複頻率', trigger: 'change' }]
+  title: [{ required: true, message: t('reminders.titleRequired'), trigger: 'blur' }],
+  type: [{ required: true, message: t('reminders.typeRequired'), trigger: 'change' }],
+  time: [{ required: true, message: t('reminders.timeRequired'), trigger: 'change' }],
+  frequency: [{ required: true, message: t('reminders.frequencyRequired'), trigger: 'change' }]
 }
 
 const getReminderIcon = (type) => {
@@ -192,10 +194,10 @@ const getReminderColor = (type) => {
 
 const getReminderFrequency = (frequency) => {
   const frequencies = {
-    daily: '每天',
-    weekdays: '工作日',
-    weekends: '週末',
-    custom: '自訂'
+    daily: t('reminders.daily'),
+    weekdays: t('reminders.weekdays'),
+    weekends: t('reminders.weekends'),
+    custom: t('reminders.custom')
   }
   return frequencies[frequency] || frequency
 }
@@ -213,7 +215,7 @@ const handleAddReminder = async () => {
         time: timeString
       })
       
-      ElMessage.success('提醒已新增')
+      ElMessage.success(t('reminders.addSuccess'))
       showAddDialog.value = false
       resetForm()
     }
@@ -226,13 +228,17 @@ const handleToggle = (id) => {
 
 const handleDelete = async (id) => {
   try {
-    await ElMessageBox.confirm('確定要刪除這個提醒嗎？', '確認刪除', {
-      confirmButtonText: '確定',
-      cancelButtonText: '取消',
-      type: 'warning'
-    })
+    await ElMessageBox.confirm(
+      t('reminders.deleteConfirm'),
+      t('reminders.deleteTitle'),
+      {
+        confirmButtonText: t('common.confirm'),
+        cancelButtonText: t('common.cancel'),
+        type: 'warning'
+      }
+    )
     remindersStore.deleteReminder(id)
-    ElMessage.success('已刪除')
+    ElMessage.success(t('reminders.deleteSuccess'))
   } catch {
     // User cancelled
   }

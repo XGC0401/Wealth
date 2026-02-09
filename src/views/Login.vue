@@ -2,10 +2,20 @@
   <div class="login-page">
     <div class="login-container">
       <div class="login-card">
+        <!-- Language Switcher -->
+        <div class="language-switcher">
+          <el-switch
+            v-model="isEnglish"
+            active-text="EN"
+            inactive-text="中文"
+            @change="switchLanguage"
+          />
+        </div>
+        
         <div class="login-header">
           <el-icon :size="50" color="#409eff"><TrophyBase /></el-icon>
-          <h1>Wealth</h1>
-          <p>健康與健身追蹤器</p>
+          <h1>{{ $t('app.title') }}</h1>
+          <p>{{ $t('app.subtitle') }}</p>
         </div>
 
         <el-form
@@ -18,7 +28,7 @@
           <el-form-item prop="username">
             <el-input
               v-model="loginForm.username"
-              placeholder="登入名稱"
+              :placeholder="$t('auth.loginNamePlaceholder')"
               size="large"
               :prefix-icon="User"
             />
@@ -28,7 +38,7 @@
             <el-input
               v-model="loginForm.password"
               type="password"
-              placeholder="密碼"
+              :placeholder="$t('auth.passwordPlaceholder')"
               size="large"
               :prefix-icon="Lock"
               show-password
@@ -43,13 +53,13 @@
               class="login-button"
               native-type="submit"
             >
-              登入
+              {{ $t('auth.login') }}
             </el-button>
           </el-form-item>
 
           <div class="login-footer">
-            <span>還沒有帳號？</span>
-            <router-link to="/register" class="register-link">立即註冊</router-link>
+            <span>{{ $t('auth.noAccount') }}</span>
+            <router-link to="/register" class="register-link">{{ $t('auth.registerNow') }}</router-link>
           </div>
         </el-form>
       </div>
@@ -58,31 +68,45 @@
 </template>
 
 <script setup>
-import { ref, reactive } from 'vue'
+import { ref, reactive, computed } from 'vue'
 import { useRouter } from 'vue-router'
 import { useUserStore } from '@/stores/user'
+import { useI18n } from 'vue-i18n'
 import { ElMessage } from 'element-plus'
 import { User, Lock } from '@element-plus/icons-vue'
 
 const router = useRouter()
 const userStore = useUserStore()
+const { t, locale } = useI18n()
 const loginFormRef = ref(null)
 const loading = ref(false)
+
+// Language switcher
+const isEnglish = ref(locale.value === 'en')
+
+const switchLanguage = () => {
+  const newLocale = isEnglish.value ? 'en' : 'zh'
+  locale.value = newLocale
+  localStorage.setItem('language', newLocale)
+  
+  // Reload page to apply ElementPlus locale
+  window.location.reload()
+}
 
 const loginForm = reactive({
   username: '',
   password: ''
 })
 
-const rules = {
+const rules = computed(() => ({
   username: [
-    { required: true, message: '請輸入登入名稱', trigger: 'blur' }
+    { required: true, message: t('auth.loginNameRequired'), trigger: 'blur' }
   ],
   password: [
-    { required: true, message: '請輸入密碼', trigger: 'blur' },
-    { min: 6, message: '密碼長度至少 6 個字元', trigger: 'blur' }
+    { required: true, message: t('auth.passwordRequired'), trigger: 'blur' },
+    { min: 6, message: t('auth.passwordMinLength'), trigger: 'blur' }
   ]
-}
+}))
 
 const handleLogin = async () => {
   if (!loginFormRef.value) return
@@ -120,13 +144,13 @@ const handleLogin = async () => {
           remindersStore.loadReminders()
           profileStore.loadProfile()
           
-          ElMessage.success('登入成功！')
+          ElMessage.success(t('auth.loginSuccess'))
           router.push('/')
         } else {
-          ElMessage.error(result.message || '登入失敗')
+          ElMessage.error(result.message || t('auth.invalidCredentials'))
         }
       } catch (error) {
-        ElMessage.error('登入時發生錯誤')
+        ElMessage.error(t('auth.loginError'))
       } finally {
         loading.value = false
       }
@@ -155,6 +179,14 @@ const handleLogin = async () => {
   border-radius: 16px;
   padding: 40px;
   box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+  position: relative;
+}
+
+.language-switcher {
+  position: absolute;
+  top: 20px;
+  right: 20px;
+  z-index: 10;
 }
 
 .login-header {

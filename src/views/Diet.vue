@@ -1,9 +1,9 @@
 <template>
   <div class="diet-page">
     <div class="page-header">
-      <h1>飲食記錄</h1>
+      <h1>{{ $t('diet.title') }}</h1>
       <el-button type="primary" :icon="Plus" @click="showAddDialog = true">
-        新增飲食
+        {{ $t('diet.addMeal') }}
       </el-button>
     </div>
 
@@ -15,7 +15,7 @@
             <el-icon :size="40" color="#67c23a"><Food /></el-icon>
             <div>
               <div class="summary-value">{{ dietStore.todayMeals.length }}</div>
-              <div class="summary-label">今日餐數</div>
+              <div class="summary-label">{{ $t('diet.todayMeals') }}</div>
             </div>
           </div>
         </el-card>
@@ -26,7 +26,7 @@
             <el-icon :size="40" color="#e6a23c"><TrendCharts /></el-icon>
             <div>
               <div class="summary-value">{{ dietStore.todayCalories }}</div>
-              <div class="summary-label">今日卡路里</div>
+              <div class="summary-label">{{ $t('diet.todayCalories') }}</div>
             </div>
           </div>
         </el-card>
@@ -37,7 +37,7 @@
             <el-icon :size="40" color="#409eff"><Trophy /></el-icon>
             <div>
               <div class="summary-value">{{ calorieStatus }}</div>
-              <div class="summary-label">攝取狀態</div>
+              <div class="summary-label">{{ $t('diet.intakeStatus') }}</div>
             </div>
           </div>
         </el-card>
@@ -48,28 +48,28 @@
     <el-card>
       <div v-if="dietStore.meals.length > 0">
         <el-table :data="paginatedMeals" stripe style="width: 100%">
-          <el-table-column prop="name" label="餐點名稱" min-width="150" />
-          <el-table-column prop="mealType" label="餐別" width="100">
+          <el-table-column prop="name" :label="$t('diet.mealName')" min-width="150" />
+          <el-table-column prop="mealType" :label="$t('diet.mealType')" width="100">
             <template #default="{ row }">
               <el-tag :type="getMealTypeColor(row.mealType)">
                 {{ row.mealType }}
               </el-tag>
             </template>
           </el-table-column>
-          <el-table-column label="卡路里" width="100">
+          <el-table-column :label="$t('diet.calories')" width="100">
             <template #default="{ row }">
-              {{ row.calories }} 卡
+              {{ row.calories }} {{ $t('common.kcal') }}
             </template>
           </el-table-column>
-          <el-table-column prop="protein" label="蛋白質(g)" width="100" />
-          <el-table-column prop="carbs" label="碳水(g)" width="100" />
-          <el-table-column prop="fat" label="脂肪(g)" width="100" />
-          <el-table-column label="日期" width="180">
+          <el-table-column prop="protein" :label="$t('diet.protein')" width="100" />
+          <el-table-column prop="carbs" :label="$t('diet.carbs')" width="100" />
+          <el-table-column prop="fat" :label="$t('diet.fat')" width="100" />
+          <el-table-column :label="$t('common.date')" width="180">
             <template #default="{ row }">
               {{ formatDate(row.date) }}
             </template>
           </el-table-column>
-          <el-table-column label="操作" width="100" fixed="right">
+          <el-table-column :label="$t('common.operation')" width="100" fixed="right">
             <template #default="{ row }">
               <el-button
                 type="danger"
@@ -78,7 +78,7 @@
                 @click="handleDelete(row.id)"
                 link
               >
-                刪除
+                {{ $t('common.delete') }}
               </el-button>
             </template>
           </el-table-column>
@@ -95,13 +95,13 @@
         </div>
       </div>
 
-      <el-empty v-else description="還沒有任何飲食記錄" :image-size="200" />
+      <el-empty v-else :description="$t('diet.noMeals')" :image-size="200" />
     </el-card>
 
     <!-- Add Meal Dialog -->
     <el-dialog
       v-model="showAddDialog"
-      title="新增飲食記錄"
+      :title="$t('diet.addDialogTitle')"
       width="500px"
     >
       <el-form
@@ -110,20 +110,20 @@
         :rules="rules"
         label-width="100px"
       >
-        <el-form-item label="餐點名稱" prop="name">
-          <el-input v-model="mealForm.name" placeholder="例如：雞胸肉沙拉" />
+        <el-form-item :label="$t('diet.mealName')" prop="name">
+          <el-input v-model="mealForm.name" :placeholder="$t('diet.namePlaceholder')" />
         </el-form-item>
 
-        <el-form-item label="餐別" prop="mealType">
-          <el-select v-model="mealForm.mealType" placeholder="請選擇餐別" style="width: 100%">
-            <el-option label="早餐" value="早餐" />
-            <el-option label="午餐" value="午餐" />
-            <el-option label="晚餐" value="晚餐" />
-            <el-option label="點心" value="點心" />
+        <el-form-item :label="$t('diet.mealType')" prop="mealType">
+          <el-select v-model="mealForm.mealType" :placeholder="$t('diet.typePlaceholder')" style="width: 100%">
+            <el-option :label="$t('diet.breakfast')" value="早餐" />
+            <el-option :label="$t('diet.lunch')" value="午餐" />
+            <el-option :label="$t('diet.dinner')" value="晚餐" />
+            <el-option :label="$t('diet.snack')" value="點心" />
           </el-select>
         </el-form-item>
 
-        <el-form-item label="卡路里" prop="calories">
+        <el-form-item :label="$t('diet.calories')" prop="calories">
           <el-input-number
             v-model="mealForm.calories"
             :min="0"
@@ -132,7 +132,7 @@
           />
         </el-form-item>
 
-        <el-form-item label="蛋白質 (g)">
+        <el-form-item :label="$t('diet.protein')">
           <el-input-number
             v-model="mealForm.protein"
             :min="0"
@@ -141,7 +141,7 @@
           />
         </el-form-item>
 
-        <el-form-item label="碳水化合物 (g)">
+        <el-form-item :label="$t('diet.carbsFull')">
           <el-input-number
             v-model="mealForm.carbs"
             :min="0"
@@ -150,7 +150,7 @@
           />
         </el-form-item>
 
-        <el-form-item label="脂肪 (g)">
+        <el-form-item :label="$t('diet.fatFull')">
           <el-input-number
             v-model="mealForm.fat"
             :min="0"
@@ -159,20 +159,20 @@
           />
         </el-form-item>
 
-        <el-form-item label="備註">
+        <el-form-item :label="$t('common.notes')">
           <el-input
             v-model="mealForm.notes"
             type="textarea"
             :rows="3"
-            placeholder="其他備註..."
+            :placeholder="$t('diet.notesPlaceholder')"
           />
         </el-form-item>
       </el-form>
 
       <template #footer>
-        <el-button @click="showAddDialog = false">取消</el-button>
+        <el-button @click="showAddDialog = false">{{ $t('common.cancel') }}</el-button>
         <el-button type="primary" @click="handleAddMeal">
-          確定
+          {{ $t('common.confirm') }}
         </el-button>
       </template>
     </el-dialog>
@@ -184,7 +184,9 @@ import { ref, reactive, computed } from 'vue'
 import { useDietStore } from '@/stores/diet'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { Plus, Delete } from '@element-plus/icons-vue'
+import { useI18n } from 'vue-i18n'
 
+const { t } = useI18n()
 const dietStore = useDietStore()
 const showAddDialog = ref(false)
 const mealFormRef = ref(null)
@@ -202,16 +204,16 @@ const mealForm = reactive({
 })
 
 const rules = {
-  name: [{ required: true, message: '請輸入餐點名稱', trigger: 'blur' }],
-  mealType: [{ required: true, message: '請選擇餐別', trigger: 'change' }],
-  calories: [{ required: true, message: '請輸入卡路里', trigger: 'blur' }]
+  name: [{ required: true, message: t('diet.nameRequired'), trigger: 'blur' }],
+  mealType: [{ required: true, message: t('diet.typeRequired'), trigger: 'change' }],
+  calories: [{ required: true, message: t('diet.caloriesRequired'), trigger: 'blur' }]
 }
 
 const calorieStatus = computed(() => {
   const calories = dietStore.todayCalories
-  if (calories < 1500) return '偏低'
-  if (calories < 2500) return '正常'
-  return '偏高'
+  if (calories < 1500) return t('diet.statusLow')
+  if (calories < 2500) return t('diet.statusNormal')
+  return t('diet.statusHigh')
 })
 
 const paginatedMeals = computed(() => {
@@ -236,7 +238,7 @@ const handleAddMeal = async () => {
   await mealFormRef.value.validate((valid) => {
     if (valid) {
       dietStore.addMeal({ ...mealForm })
-      ElMessage.success('飲食記錄已新增')
+      ElMessage.success(t('diet.addSuccess'))
       showAddDialog.value = false
       resetForm()
     }
@@ -245,13 +247,17 @@ const handleAddMeal = async () => {
 
 const handleDelete = async (id) => {
   try {
-    await ElMessageBox.confirm('確定要刪除這筆飲食記錄嗎？', '確認刪除', {
-      confirmButtonText: '確定',
-      cancelButtonText: '取消',
-      type: 'warning'
-    })
+    await ElMessageBox.confirm(
+      t('diet.deleteConfirm'),
+      t('diet.deleteTitle'),
+      {
+        confirmButtonText: t('common.confirm'),
+        cancelButtonText: t('common.cancel'),
+        type: 'warning'
+      }
+    )
     dietStore.deleteMeal(id)
-    ElMessage.success('已刪除')
+    ElMessage.success(t('diet.deleteSuccess'))
   } catch {
     // User cancelled
   }

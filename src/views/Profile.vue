@@ -1,9 +1,9 @@
 <template>
   <div class="profile-page">
     <div class="page-header">
-      <h1>個人資料與目標</h1>
+      <h1>{{ $t('profile.title') }}</h1>
       <el-button type="primary" :icon="Edit" @click="showEditDialog = true">
-        編輯資料
+        {{ $t('profile.editProfile') }}
       </el-button>
     </div>
 
@@ -15,7 +15,7 @@
             <el-icon :size="35" color="#409eff"><User /></el-icon>
             <div class="stat-info">
               <div class="stat-value">{{ profileStore.profile.age || '-' }}</div>
-              <div class="stat-label">年齡</div>
+              <div class="stat-label">{{ $t('profile.age') }}</div>
             </div>
           </div>
         </el-card>
@@ -27,7 +27,7 @@
             <el-icon :size="35" color="#67c23a"><TrendCharts /></el-icon>
             <div class="stat-info">
               <div class="stat-value">{{ profileStore.profile.weight || '-' }}</div>
-              <div class="stat-label">體重 (kg)</div>
+              <div class="stat-label">{{ $t('profile.weight') }}</div>
             </div>
           </div>
         </el-card>
@@ -39,7 +39,7 @@
             <el-icon :size="35" color="#e6a23c"><Rank /></el-icon>
             <div class="stat-info">
               <div class="stat-value">{{ profileStore.profile.height || '-' }}</div>
-              <div class="stat-label">身高 (cm)</div>
+              <div class="stat-label">{{ $t('profile.height') }}</div>
             </div>
           </div>
         </el-card>
@@ -65,53 +65,53 @@
           <template #header>
             <div class="card-header">
               <el-icon :size="24" color="#409eff"><Flag /></el-icon>
-              <span>我的目標</span>
+              <span>{{ $t('profile.myGoal') }}</span>
             </div>
           </template>
 
           <div v-if="profileStore.profile.targetWeight" class="goal-content">
             <div class="goal-item">
-              <span class="goal-label">目標類型：</span>
-              <el-tag type="success">{{ profileStore.profile.goal || '減重' }}</el-tag>
+              <span class="goal-label">{{ $t('profile.goalType') }}</span>
+              <el-tag type="success">{{ profileStore.profile.goal || $t('profile.weightLoss') }}</el-tag>
             </div>
             
             <div class="goal-item">
-              <span class="goal-label">目標體重：</span>
+              <span class="goal-label">{{ $t('profile.targetWeight') }}</span>
               <span class="goal-value">{{ profileStore.profile.targetWeight }} kg</span>
             </div>
 
             <div class="goal-item">
-              <span class="goal-label">目標日期：</span>
+              <span class="goal-label">{{ $t('profile.targetDate') }}</span>
               <span class="goal-value">{{ formatDate(profileStore.profile.targetDate) }}</span>
             </div>
 
             <div class="goal-item">
-              <span class="goal-label">需減重：</span>
+              <span class="goal-label">{{ $t('profile.weightToLose') }}</span>
               <span class="goal-value highlight">{{ profileStore.weightToLose }} kg</span>
             </div>
 
             <div class="goal-item">
-              <span class="goal-label">剩餘天數：</span>
-              <span class="goal-value">{{ profileStore.daysRemaining }} 天</span>
+              <span class="goal-label">{{ $t('profile.daysRemaining') }}</span>
+              <span class="goal-value">{{ profileStore.daysRemaining }} {{ $t('common.days') }}</span>
             </div>
 
             <div class="goal-item">
-              <span class="goal-label">每週目標：</span>
-              <span class="goal-value">{{ profileStore.weeklyWeightGoal }} kg/週</span>
+              <span class="goal-label">{{ $t('profile.weeklyGoal') }}</span>
+              <span class="goal-value">{{ profileStore.weeklyWeightGoal }} kg/{{ $t('common.week') }}</span>
             </div>
 
             <div class="progress-section">
               <div class="progress-header">
-                <span>目標進度</span>
+                <span>{{ $t('profile.goalProgress') }}</span>
                 <span>{{ goalProgress }}%</span>
               </div>
               <el-progress :percentage="goalProgress" :color="progressColor" />
             </div>
           </div>
 
-          <el-empty v-else description="尚未設定目標" :image-size="120">
+          <el-empty v-else :description="$t('profile.noGoal')" :image-size="120">
             <el-button type="primary" @click="showEditDialog = true">
-              設定目標
+              {{ $t('profile.setGoal') }}
             </el-button>
           </el-empty>
         </el-card>
@@ -123,7 +123,7 @@
           <template #header>
             <div class="card-header">
               <el-icon :size="24" color="#67c23a"><Calendar /></el-icon>
-              <span>目標日曆</span>
+              <span>{{ $t('profile.goalCalendar') }}</span>
             </div>
           </template>
 
@@ -148,26 +148,26 @@
     <el-card class="weight-history-card">
       <template #header>
         <div class="card-header">
-          <span>體重記錄</span>
+          <span>{{ $t('profile.weightHistory') }}</span>
           <el-button type="primary" size="small" :icon="Plus" @click="showWeightDialog = true">
-            記錄體重
+            {{ $t('profile.recordWeight') }}
           </el-button>
         </div>
       </template>
 
       <div v-if="profileStore.weightHistory.length > 0">
         <el-table :data="paginatedWeightHistory" stripe style="width: 100%">
-          <el-table-column prop="weight" label="體重 (kg)" width="120">
+          <el-table-column prop="weight" :label="$t('profile.weight')" width="120">
             <template #default="{ row }">
               {{ row.weight }} kg
             </template>
           </el-table-column>
-          <el-table-column label="日期" width="180">
+          <el-table-column :label="$t('common.date')" width="180">
             <template #default="{ row }">
               {{ formatDateTime(row.date) }}
             </template>
           </el-table-column>
-          <el-table-column label="變化" width="120">
+          <el-table-column :label="$t('profile.change')" width="120">
             <template #default="{ row, $index }">
               <el-tag v-if="$index < profileStore.weightHistory.length - 1" 
                 :type="getWeightChangeType(row, $index)">
@@ -180,7 +180,7 @@
               {{ calculateBMI(row.weight) }}
             </template>
           </el-table-column>
-          <el-table-column label="操作" width="100">
+          <el-table-column :label="$t('common.operation')" width="100">
             <template #default="{ row }">
               <el-button
                 type="danger"
@@ -189,7 +189,7 @@
                 @click="handleDeleteWeight(row.id)"
                 link
               >
-                刪除
+                {{ $t('common.delete') }}
               </el-button>
             </template>
           </el-table-column>
@@ -205,13 +205,13 @@
         </div>
       </div>
 
-      <el-empty v-else description="還沒有體重記錄" :image-size="150" />
+      <el-empty v-else :description="$t('profile.noWeightRecords')" :image-size="150" />
     </el-card>
 
     <!-- Edit Profile Dialog -->
     <el-dialog
       v-model="showEditDialog"
-      title="編輯個人資料與目標"
+      :title="$t('profile.editDialogTitle')"
       width="600px"
     >
       <el-form
@@ -220,9 +220,9 @@
         :rules="profileRules"
         label-width="120px"
       >
-        <el-divider content-position="left">基本資料</el-divider>
+        <el-divider content-position="left">{{ $t('profile.basicInfo') }}</el-divider>
 
-        <el-form-item label="年齡" prop="age">
+        <el-form-item :label="$t('profile.age')" prop="age">
           <el-input-number
             v-model="profileForm.age"
             :min="10"
@@ -231,14 +231,14 @@
           />
         </el-form-item>
 
-        <el-form-item label="性別" prop="gender">
+        <el-form-item :label="$t('profile.gender')" prop="gender">
           <el-radio-group v-model="profileForm.gender">
-            <el-radio label="男性">男性</el-radio>
-            <el-radio label="女性">女性</el-radio>
+            <el-radio :label="$t('profile.male')">{{ $t('profile.male') }}</el-radio>
+            <el-radio :label="$t('profile.female')">{{ $t('profile.female') }}</el-radio>
           </el-radio-group>
         </el-form-item>
 
-        <el-form-item label="身高 (cm)" prop="height">
+        <el-form-item :label="$t('profile.heightCm')" prop="height">
           <el-input-number
             v-model="profileForm.height"
             :min="100"
@@ -247,7 +247,7 @@
           />
         </el-form-item>
 
-        <el-form-item label="當前體重 (kg)" prop="weight">
+        <el-form-item :label="$t('profile.currentWeight')" prop="weight">
           <el-input-number
             v-model="profileForm.weight"
             :min="30"
@@ -258,19 +258,19 @@
           />
         </el-form-item>
 
-        <el-divider content-position="left">目標設定</el-divider>
+        <el-divider content-position="left">{{ $t('profile.goalSetting') }}</el-divider>
 
-        <el-form-item label="目標類型" prop="goal">
-          <el-select v-model="profileForm.goal" placeholder="請選擇目標" style="width: 100%">
-            <el-option label="減重" value="減重" />
-            <el-option label="增重" value="增重" />
-            <el-option label="維持體重" value="維持體重" />
-            <el-option label="增肌" value="增肌" />
-            <el-option label="體態塑形" value="體態塑形" />
+        <el-form-item :label="$t('profile.goalType')" prop="goal">
+          <el-select v-model="profileForm.goal" :placeholder="$t('profile.selectGoal')" style="width: 100%">
+            <el-option :label="$t('profile.weightLoss')" value="減重" />
+            <el-option :label="$t('profile.weightGain')" value="增重" />
+            <el-option :label="$t('profile.maintainWeight')" value="維持體重" />
+            <el-option :label="$t('profile.muscleGain')" value="增肌" />
+            <el-option :label="$t('profile.bodyShaping')" value="體態塑形" />
           </el-select>
         </el-form-item>
 
-        <el-form-item label="目標體重 (kg)" prop="targetWeight">
+        <el-form-item :label="$t('profile.targetWeightKg')" prop="targetWeight">
           <el-input-number
             v-model="profileForm.targetWeight"
             :min="30"
@@ -281,17 +281,17 @@
           />
         </el-form-item>
 
-        <el-form-item label="目標日期" prop="targetDate">
+        <el-form-item :label="$t('profile.targetDate')" prop="targetDate">
           <el-date-picker
             v-model="profileForm.targetDate"
             type="date"
-            placeholder="選擇目標日期"
+            :placeholder="$t('profile.selectDate')"
             style="width: 100%"
             :disabled-date="disabledDate"
           />
         </el-form-item>
 
-        <el-form-item label="每日卡路里目標">
+        <el-form-item :label="$t('profile.dailyCalorieGoal')">
           <el-input-number
             v-model="profileForm.dailyCalorieGoal"
             :min="1000"
@@ -303,9 +303,9 @@
       </el-form>
 
       <template #footer>
-        <el-button @click="showEditDialog = false">取消</el-button>
+        <el-button @click="showEditDialog = false">{{ $t('common.cancel') }}</el-button>
         <el-button type="primary" @click="handleSaveProfile">
-          儲存
+          {{ $t('common.save') }}
         </el-button>
       </template>
     </el-dialog>
@@ -313,7 +313,7 @@
     <!-- Add Weight Dialog -->
     <el-dialog
       v-model="showWeightDialog"
-      title="記錄體重"
+      :title="$t('profile.recordWeight')"
       width="400px"
     >
       <el-form
@@ -322,7 +322,7 @@
         :rules="weightRules"
         label-width="100px"
       >
-        <el-form-item label="體重 (kg)" prop="weight">
+        <el-form-item :label="$t('profile.weightKg')" prop="weight">
           <el-input-number
             v-model="weightForm.weight"
             :min="30"
@@ -335,9 +335,9 @@
       </el-form>
 
       <template #footer>
-        <el-button @click="showWeightDialog = false">取消</el-button>
+        <el-button @click="showWeightDialog = false">{{ $t('common.cancel') }}</el-button>
         <el-button type="primary" @click="handleAddWeight">
-          確定
+          {{ $t('common.confirm') }}
         </el-button>
       </template>
     </el-dialog>
@@ -348,6 +348,9 @@
 import { ref, reactive, computed } from 'vue'
 import { useProfileStore } from '@/stores/profile'
 import { ElMessage, ElMessageBox } from 'element-plus'
+import { useI18n } from 'vue-i18n'
+
+const { t } = useI18n()
 import { 
   Edit, Plus, Delete, User, Flag, Calendar,
   TrendCharts, Rank, DataAnalysis
@@ -378,14 +381,14 @@ const weightForm = reactive({
 })
 
 const profileRules = {
-  age: [{ required: true, message: '請輸入年齡', trigger: 'blur' }],
-  gender: [{ required: true, message: '請選擇性別', trigger: 'change' }],
-  height: [{ required: true, message: '請輸入身高', trigger: 'blur' }],
-  weight: [{ required: true, message: '請輸入體重', trigger: 'blur' }]
+  age: [{ required: true, message: t('profile.ageRequired'), trigger: 'blur' }],
+  gender: [{ required: true, message: t('profile.genderRequired'), trigger: 'change' }],
+  height: [{ required: true, message: t('profile.heightRequired'), trigger: 'blur' }],
+  weight: [{ required: true, message: t('profile.weightRequired'), trigger: 'blur' }]
 }
 
 const weightRules = {
-  weight: [{ required: true, message: '請輸入體重', trigger: 'blur' }]
+  weight: [{ required: true, message: t('profile.weightRequired'), trigger: 'blur' }]
 }
 
 const paginatedWeightHistory = computed(() => {
@@ -448,7 +451,7 @@ const handleSaveProfile = async () => {
         ...profileForm,
         targetDate: profileForm.targetDate ? profileForm.targetDate.toISOString() : null
       })
-      ElMessage.success('資料已儲存')
+      ElMessage.success(t('profile.saveSuccess'))
       showEditDialog.value = false
     }
   })
@@ -460,7 +463,7 @@ const handleAddWeight = async () => {
   await weightFormRef.value.validate((valid) => {
     if (valid) {
       profileStore.addWeightEntry(weightForm.weight)
-      ElMessage.success('體重已記錄')
+      ElMessage.success(t('profile.weightRecorded'))
       showWeightDialog.value = false
     }
   })
@@ -468,13 +471,17 @@ const handleAddWeight = async () => {
 
 const handleDeleteWeight = async (id) => {
   try {
-    await ElMessageBox.confirm('確定要刪除這筆體重記錄嗎？', '確認刪除', {
-      confirmButtonText: '確定',
-      cancelButtonText: '取消',
-      type: 'warning'
-    })
+    await ElMessageBox.confirm(
+      t('profile.deleteConfirm'),
+      t('profile.deleteTitle'),
+      {
+        confirmButtonText: t('common.confirm'),
+        cancelButtonText: t('common.cancel'),
+        type: 'warning'
+      }
+    )
     profileStore.deleteWeightEntry(id)
-    ElMessage.success('已刪除')
+    ElMessage.success(t('profile.deleteSuccess'))
   } catch {
     // User cancelled
   }

@@ -1,7 +1,7 @@
 <template>
   <div class="booking-page">
     <div class="page-header">
-      <h1>醫院與診所預約</h1>
+      <h1>{{ $t('booking.title') }}</h1>
       <div class="header-actions">
         <el-button-group>
           <el-button 
@@ -9,14 +9,14 @@
             :icon="List"
             @click="viewMode = 'list'"
           >
-            列表
+            {{ $t('booking.listView') }}
           </el-button>
           <el-button 
             :type="viewMode === 'map' ? 'primary' : ''" 
             :icon="LocationInformation"
             @click="viewMode = 'map'"
           >
-            地圖
+            {{ $t('booking.mapView') }}
           </el-button>
         </el-button-group>
       </div>
@@ -27,7 +27,7 @@
       <el-skeleton :rows="8" animated />
       <div style="text-align: center; margin-top: 20px; color: #409eff;">
         <el-icon class="is-loading" :size="20"><Loading /></el-icon>
-        <span style="margin-left: 8px;">正在從地圖服務載入醫院和診所數據...</span>
+        <span style="margin-left: 8px;">{{ $t('booking.loading') }}</span>
       </div>
     </div>
 
@@ -46,26 +46,26 @@
       <!-- Sort and Filter -->
       <el-card class="filter-card">
         <div class="filter-section">
-          <span class="filter-label">類型篩選：</span>
+          <span class="filter-label">{{ $t('booking.filterType') }}</span>
           <el-radio-group v-model="typeFilter" size="default" style="margin-right: 30px;">
-            <el-radio-button label="all">全部</el-radio-button>
-            <el-radio-button label="hospital">醫院</el-radio-button>
-            <el-radio-button label="clinic">診所</el-radio-button>
+            <el-radio-button label="all">{{ $t('booking.all') }}</el-radio-button>
+            <el-radio-button label="hospital">{{ $t('booking.hospital') }}</el-radio-button>
+            <el-radio-button label="clinic">{{ $t('booking.clinic') }}</el-radio-button>
           </el-radio-group>
           
-          <span class="filter-label">排序方式：</span>
+          <span class="filter-label">{{ $t('booking.sortBy') }}</span>
           <el-radio-group v-model="sortBy" @change="handleSortChange">
             <el-radio-button label="nearest">
               <el-icon><LocationFilled /></el-icon>
-              最近距離
+              {{ $t('booking.nearest') }}
             </el-radio-button>
             <el-radio-button label="rating">
               <el-icon><StarFilled /></el-icon>
-              評分最高
+              {{ $t('booking.highestRating') }}
             </el-radio-button>
             <el-radio-button label="leastPeople">
               <el-icon><User /></el-icon>
-              人數最少
+              {{ $t('booking.leastPeople') }}
             </el-radio-button>
           </el-radio-group>
         </div>
@@ -91,7 +91,7 @@
                 :type="hospital.type === 'hospital' ? 'danger' : 'success'" 
                 class="hospital-type-tag"
               >
-                {{ hospital.type === 'hospital' ? '醫院' : '診所' }}
+                {{ hospital.type === 'hospital' ? $t('booking.hospital') : $t('booking.clinic') }}
               </el-tag>
             </div>
             <div class="hospital-info">
@@ -129,7 +129,7 @@
                 <div class="stat-item">
                   <el-tag type="info" size="small">
                     <el-icon><User /></el-icon>
-                    {{ hospital.currentWaitingPeople }} 人
+                    {{ hospital.currentWaitingPeople }} {{ $t('booking.people') }}
                   </el-tag>
                 </div>
               </div>
@@ -139,7 +139,7 @@
                 class="book-btn" 
                 @click="openDetailDialog(hospital)"
               >
-                查看詳情並預約
+                {{ $t('booking.viewDetailAndBook') }}
               </el-button>
             </div>
           </el-card>
@@ -157,31 +157,31 @@
             @click="getUserLocation"
             :loading="locatingUser"
           >
-            {{ userLocation ? '已定位' : '取得我的位置' }}
+            {{ userLocation ? $t('booking.located') : $t('booking.getMyLocation') }}
           </el-button>
           <el-text v-if="userLocation" type="success">
             <el-icon><SuccessFilled /></el-icon>
-            已定位到您的位置
+            {{ $t('booking.locationSuccess') }}
           </el-text>
           
           <div style="margin-left: 20px; display: inline-block;">
-            <span class="filter-label">類型篩選：</span>
+            <span class="filter-label">{{ $t('booking.typeFilter') }}</span>
             <el-radio-group v-model="typeFilter" size="small">
-              <el-radio-button label="all">全部</el-radio-button>
-              <el-radio-button label="hospital">醫院</el-radio-button>
-              <el-radio-button label="clinic">診所</el-radio-button>
+              <el-radio-button label="all">{{ $t('booking.all') }}</el-radio-button>
+              <el-radio-button label="hospital">{{ $t('booking.hospital') }}</el-radio-button>
+              <el-radio-button label="clinic">{{ $t('booking.clinic') }}</el-radio-button>
             </el-radio-group>
           </div>
           
           <el-tag type="info">
-            地圖上共有 {{ filteredHospitalsForMap.length }} 個醫療機構
+            {{ $t('booking.mapTotal', { count: filteredHospitalsForMap.length }) }}
           </el-tag>
           <el-button 
             @click="fitMapToMarkers"
             :icon="LocationInformation"
             size="small"
           >
-            顯示全部
+            {{ $t('booking.showAll') }}
           </el-button>
         </div>
         
@@ -215,8 +215,8 @@
               </l-icon>
               <l-popup>
                 <div class="popup-content">
-                  <h4>您的位置</h4>
-                  <p>目前所在地點</p>
+                  <h4>{{ $t('booking.yourLocation') }}</h4>
+                  <p>{{ $t('booking.currentLocation') }}</p>
                 </div>
               </l-popup>
             </l-marker>
@@ -254,11 +254,11 @@
                         disabled 
                         size="small"
                       />
-                      {{ hospital.rating }} 分
+                      {{ hospital.rating }} {{ $t('booking.score') }}
                     </p>
                     <p v-if="userLocation">
                       <el-icon><LocationFilled /></el-icon>
-                      距離約 {{ getDistance(hospital) }} 公里
+                      {{ $t('booking.distanceAbout', { distance: getDistance(hospital) }) }}
                     </p>
                     <el-button 
                       type="primary" 
@@ -266,7 +266,7 @@
                       style="margin-top: 8px; width: 100%"
                       @click="openDetailDialog(hospital)"
                     >
-                      查看詳情並預約
+                      {{ $t('booking.viewDetailAndBook') }}
                     </el-button>
                   </div>
                 </l-popup>
@@ -277,7 +277,7 @@
         
         <!-- Hospital list for map view -->
         <div class="map-sidebar">
-          <h3>醫療機構列表 ({{ filteredHospitalsForMap.length }})</h3>
+          <h3>{{ $t('booking.hospitalListTitle', { count: filteredHospitalsForMap.length }) }}</h3>
           <el-scrollbar height="600px">
             <div 
               v-for="hospital in filteredHospitalsForMap" 
@@ -292,10 +292,10 @@
                 <div class="map-list-name">{{ hospital.name }}</div>
                 <div class="map-list-distance">
                   <template v-if="userLocation">
-                    距離 {{ getDistance(hospital) }} km
+                    {{ $t('booking.distance') }} {{ getDistance(hospital) }} km
                   </template>
                   <template v-else>
-                    {{ hospital.type === 'hospital' ? '醫院' : '診所' }}
+                    {{ hospital.type === 'hospital' ? $t('booking.hospital') : $t('booking.clinic') }}
                   </template>
                 </div>
               </div>
@@ -314,47 +314,47 @@
     >
       <div v-if="selectedHospital" class="detail-content">
         <el-tabs v-model="activeTab">
-          <el-tab-pane label="基本資訊" name="info">
+          <el-tab-pane :label="$t('booking.basicInfo')" name="info">
             <div class="detail-section">
               <img :src="selectedHospital.image" class="detail-image" />
               
               <el-descriptions :column="1" border>
-                <el-descriptions-item label="機構類型">
+                <el-descriptions-item :label="$t('booking.institutionType')">
                   <el-tag :type="selectedHospital.type === 'hospital' ? 'danger' : 'success'">
-                    {{ selectedHospital.type === 'hospital' ? '醫院' : '診所' }}
+                    {{ selectedHospital.type === 'hospital' ? $t('booking.hospital') : $t('booking.clinic') }}
                   </el-tag>
                 </el-descriptions-item>
-                <el-descriptions-item label="地址">
+                <el-descriptions-item :label="$t('booking.address')">
                   {{ selectedHospital.address }}
                 </el-descriptions-item>
-                <el-descriptions-item label="電話">
+                <el-descriptions-item :label="$t('booking.phone')">
                   {{ selectedHospital.phone }}
                 </el-descriptions-item>
-                <el-descriptions-item label="營業時間">
+                <el-descriptions-item :label="$t('booking.businessHours')">
                   {{ selectedHospital.openTime }} - {{ selectedHospital.closeTime }}
                 </el-descriptions-item>
-                <el-descriptions-item label="營業日">
+                <el-descriptions-item :label="$t('booking.workingDays')">
                   {{ selectedHospital.workingDays.join('、') }}
                 </el-descriptions-item>
-                <el-descriptions-item label="評分">
+                <el-descriptions-item :label="$t('booking.rating')">
                   <el-rate 
                     v-model="selectedHospital.rating" 
                     disabled 
                     show-score 
                     text-color="#ff9900"
-                    score-template="{value} 分"
+                    :score-template="$t('booking.scoreTemplate')"
                   />
                 </el-descriptions-item>
-                <el-descriptions-item label="目前等候人數">
-                  <el-tag type="warning">{{ selectedHospital.currentWaitingPeople }} 人</el-tag>
+                <el-descriptions-item :label="$t('booking.currentWaiting')">
+                  <el-tag type="warning">{{ selectedHospital.currentWaitingPeople }} {{ $t('booking.people') }}</el-tag>
                 </el-descriptions-item>
-                <el-descriptions-item label="距離">
-                  {{ selectedHospital.distance }} 公里
+                <el-descriptions-item :label="$t('booking.distance')">
+                  {{ selectedHospital.distance }} {{ $t('booking.km') }}
                 </el-descriptions-item>
               </el-descriptions>
               
               <div class="departments-section">
-                <h4>診療科別</h4>
+                <h4>{{ $t('booking.departments') }}</h4>
                 <div class="departments-tags">
                   <el-tag 
                     v-for="dept in selectedHospital.departments" 
@@ -368,17 +368,17 @@
             </div>
           </el-tab-pane>
           
-          <el-tab-pane label="立即預約" name="booking">
+          <el-tab-pane :label="$t('booking.bookNow')" name="booking">
             <el-form 
               ref="bookingFormRef"
               :model="bookingForm" 
               :rules="bookingRules"
               label-width="100px"
             >
-              <el-form-item label="診療科別" prop="department">
+              <el-form-item :label="$t('booking.departmentLabel')" prop="department">
                 <el-select 
                   v-model="bookingForm.department" 
-                  placeholder="請選擇科別"
+                  :placeholder="$t('booking.departmentPlaceholder')"
                   style="width: 100%"
                 >
                   <el-option
@@ -390,11 +390,11 @@
                 </el-select>
               </el-form-item>
               
-              <el-form-item label="預約日期" prop="date">
+              <el-form-item :label="$t('booking.dateLabel')" prop="date">
                 <el-date-picker
                   v-model="bookingForm.date"
                   type="date"
-                  placeholder="選擇日期"
+                  :placeholder="$t('booking.datePlaceholder')"
                   style="width: 100%"
                   :disabled-date="disabledDate"
                   format="YYYY-MM-DD"
@@ -403,10 +403,10 @@
                 />
               </el-form-item>
               
-              <el-form-item label="預約時段" prop="time">
+              <el-form-item :label="$t('booking.timeLabel')" prop="time">
                 <el-select 
                   v-model="bookingForm.time" 
-                  placeholder="請選擇時段"
+                  :placeholder="$t('booking.timePlaceholder')"
                   style="width: 100%"
                   :disabled="!bookingForm.date"
                 >
@@ -419,34 +419,34 @@
                 </el-select>
               </el-form-item>
               
-              <el-form-item label="就診人姓名" prop="patientName">
+              <el-form-item :label="$t('booking.patientNameLabel')" prop="patientName">
                 <el-input 
                   v-model="bookingForm.patientName" 
-                  placeholder="請輸入就診人姓名"
+                  :placeholder="$t('booking.patientNamePlaceholder')"
                 />
               </el-form-item>
               
-              <el-form-item label="聯絡電話" prop="phone">
+              <el-form-item :label="$t('booking.phoneLabel')" prop="phone">
                 <el-input 
                   v-model="bookingForm.phone" 
-                  placeholder="請輸入聯絡電話"
+                  :placeholder="$t('booking.phonePlaceholder')"
                 />
               </el-form-item>
               
-              <el-form-item label="備註">
+              <el-form-item :label="$t('booking.notesLabel')">
                 <el-input 
                   v-model="bookingForm.notes" 
                   type="textarea"
                   :rows="3"
-                  placeholder="症狀描述或其他備註..."
+                  :placeholder="$t('booking.notesPlaceholder')"
                 />
               </el-form-item>
               
               <el-form-item>
                 <el-button type="primary" @click="handleBooking" :loading="bookingLoading">
-                  確認預約
+                  {{ $t('booking.confirmBooking') }}
                 </el-button>
-                <el-button @click="resetBookingForm">重置</el-button>
+                <el-button @click="resetBookingForm">{{ $t('booking.reset') }}</el-button>
               </el-form-item>
             </el-form>
           </el-tab-pane>
@@ -458,8 +458,8 @@
     <el-card class="my-bookings-card">
       <template #header>
         <div class="card-header">
-          <span>我的預約記錄</span>
-          <el-tag type="info">共 {{ myBookings.length }} 筆</el-tag>
+          <span>{{ $t('booking.myBookings') }}</span>
+          <el-tag type="info">{{ $t('booking.totalCount', { count: myBookings.length }) }}</el-tag>
         </div>
       </template>
       
@@ -476,12 +476,12 @@
               <div class="booking-item">
                 <div class="booking-info">
                   <h4>{{ getHospitalName(booking.hospitalId) }}</h4>
-                  <p><strong>科別：</strong>{{ booking.department }}</p>
-                  <p><strong>就診人：</strong>{{ booking.patientName }}</p>
-                  <p><strong>電話：</strong>{{ booking.phone }}</p>
-                  <p v-if="booking.notes"><strong>備註：</strong>{{ booking.notes }}</p>
+                  <p><strong>{{ $t('booking.departmentLabel') }}</strong>{{ booking.department }}</p>
+                  <p><strong>{{ $t('booking.patientLabel') }}</strong>{{ booking.patientName }}</p>
+                  <p><strong>{{ $t('booking.phoneLabel') }}</strong>{{ booking.phone }}</p>
+                  <p v-if="booking.notes"><strong>{{ $t('booking.notesLabel') }}</strong>{{ booking.notes }}</p>
                   <el-tag :type="booking.status === 'confirmed' ? 'success' : 'info'">
-                    {{ booking.status === 'confirmed' ? '已確認' : '已取消' }}
+                    {{ booking.status === 'confirmed' ? $t('booking.confirmed') : $t('booking.cancelled') }}
                   </el-tag>
                 </div>
                 <div class="booking-actions">
@@ -491,14 +491,14 @@
                     size="small"
                     @click="handleCancelBooking(booking.id)"
                   >
-                    取消預約
+                    {{ $t('booking.cancelBooking') }}
                   </el-button>
                   <el-button 
                     type="danger" 
                     size="small"
                     @click="handleDeleteBooking(booking.id)"
                   >
-                    刪除記錄
+                    {{ $t('booking.deleteRecord') }}
                   </el-button>
                 </div>
               </div>
@@ -507,7 +507,7 @@
         </el-timeline>
       </div>
       
-      <el-empty v-else description="還沒有任何預約記錄" :image-size="150" />
+      <el-empty v-else :description="$t('booking.noBookings')" :image-size="150" />
     </el-card>
   </div>
 </template>
@@ -517,6 +517,7 @@ import { ref, reactive, computed, onMounted, onUnmounted, watch } from 'vue'
 import { useBookingStore } from '@/stores/booking'
 import { useUserStore } from '@/stores/user'
 import { ElMessage, ElMessageBox } from 'element-plus'
+import { useI18n } from 'vue-i18n'
 import { 
   List, 
   LocationInformation, 
@@ -551,6 +552,7 @@ L.Icon.Default.mergeOptions({
 
 const bookingStore = useBookingStore()
 const userStore = useUserStore()
+const { t } = useI18n()
 
 const viewMode = ref('list')
 const sortBy = ref('nearest')
@@ -578,13 +580,13 @@ const bookingForm = reactive({
 })
 
 const bookingRules = {
-  department: [{ required: true, message: '請選擇診療科別', trigger: 'change' }],
-  date: [{ required: true, message: '請選擇預約日期', trigger: 'change' }],
-  time: [{ required: true, message: '請選擇預約時段', trigger: 'change' }],
-  patientName: [{ required: true, message: '請輸入就診人姓名', trigger: 'blur' }],
+  department: [{ required: true, message: t('booking.departmentRequired'), trigger: 'change' }],
+  date: [{ required: true, message: t('booking.dateRequired'), trigger: 'change' }],
+  time: [{ required: true, message: t('booking.timeRequired'), trigger: 'change' }],
+  patientName: [{ required: true, message: t('booking.patientNameRequired'), trigger: 'blur' }],
   phone: [
-    { required: true, message: '請輸入聯絡電話', trigger: 'blur' },
-    { pattern: /^09\d{8}$/, message: '請輸入正確的手機號碼', trigger: 'blur' }
+    { required: true, message: t('booking.phoneRequired'), trigger: 'blur' },
+    { pattern: /^09\d{8}$/, message: t('booking.phoneInvalid'), trigger: 'blur' }
   ]
 }
 
@@ -636,7 +638,7 @@ const availableTimeSlots = computed(() => {
 // Methods
 const getUserLocation = () => {
   if (!navigator.geolocation) {
-    ElMessage.error('您的瀏覽器不支援地理位置功能')
+    ElMessage.error(t('booking.geolocationNotSupported'))
     return
   }
 
@@ -653,12 +655,12 @@ const getUserLocation = () => {
       mapCenter.value = [location.lat, location.lng]
       zoom.value = 14
       locatingUser.value = false
-      ElMessage.success('已成功定位您的位置')
+      ElMessage.success(t('booking.locationSuccessMessage'))
     },
     (error) => {
       locatingUser.value = false
       console.error('Geolocation error:', error)
-      ElMessage.error('無法取得您的位置，請確認已允許位置存取權限')
+      ElMessage.error(t('booking.locationError'))
     },
     {
       enableHighAccuracy: true,
@@ -785,7 +787,7 @@ const handleBooking = async () => {
         bookingStore.createBooking(booking)
         
         ElMessage.success({
-          message: '預約成功！已自動新增提醒通知',
+          message: t('booking.bookingSuccess'),
           duration: 3000
         })
         
@@ -794,7 +796,7 @@ const handleBooking = async () => {
         bookingLoading.value = false
       }, 1000)
     } else {
-      ElMessage.error('請完整填寫預約資訊')
+      ElMessage.error(t('booking.fillAllFields'))
     }
   })
 }
@@ -813,21 +815,21 @@ const resetBookingForm = () => {
 
 const getHospitalName = (hospitalId) => {
   const hospital = bookingStore.getHospitalById(hospitalId)
-  return hospital ? hospital.name : '未知醫院'
+  return hospital ? hospital.name : t('booking.unknownHospital')
 }
 
 const handleCancelBooking = (bookingId) => {
   ElMessageBox.confirm(
-    '確定要取消此預約嗎？',
-    '取消預約',
+    t('booking.cancelConfirmMessage'),
+    t('booking.cancelBooking'),
     {
-      confirmButtonText: '確定',
-      cancelButtonText: '取消',
+      confirmButtonText: t('common.confirm'),
+      cancelButtonText: t('common.cancel'),
       type: 'warning'
     }
   ).then(() => {
     bookingStore.cancelBooking(bookingId)
-    ElMessage.success('已取消預約')
+    ElMessage.success(t('booking.cancelledSuccess'))
   }).catch(() => {
     // Cancelled
   })
@@ -835,16 +837,16 @@ const handleCancelBooking = (bookingId) => {
 
 const handleDeleteBooking = (bookingId) => {
   ElMessageBox.confirm(
-    '確定要刪除此預約記錄嗎？',
-    '刪除記錄',
+    t('booking.deleteConfirmMessage'),
+    t('booking.deleteRecord'),
     {
-      confirmButtonText: '確定',
-      cancelButtonText: '取消',
+      confirmButtonText: t('common.confirm'),
+      cancelButtonText: t('common.cancel'),
       type: 'warning'
     }
   ).then(() => {
     bookingStore.deleteBooking(bookingId)
-    ElMessage.success('已刪除記錄')
+    ElMessage.success(t('booking.deletedSuccess'))
   }).catch(() => {
     // Cancelled
   })

@@ -1,9 +1,9 @@
 <template>
   <div class="wellness-plans-page">
     <div class="page-header">
-      <h1>健康計畫</h1>
+      <h1>{{ $t('wellnessPlans.title') }}</h1>
       <el-button type="primary" :icon="Plus" @click="showCreateDialog = true">
-        創建計畫
+        {{ $t('wellnessPlans.createPlan') }}
       </el-button>
     </div>
 
@@ -21,7 +21,7 @@
               <div>
                 <h3>{{ plan.title }}</h3>
                 <el-tag :type="plan.active ? 'success' : 'info'" size="small">
-                  {{ plan.active ? '進行中' : '已完成' }}
+                  {{ plan.active ? $t('wellnessPlans.active') : $t('wellnessPlans.completed') }}
                 </el-tag>
               </div>
               <el-dropdown>
@@ -29,10 +29,10 @@
                 <template #dropdown>
                   <el-dropdown-menu>
                     <el-dropdown-item @click="togglePlanStatus(plan.id)">
-                      {{ plan.active ? '標記為完成' : '重新啟動' }}
+                      {{ plan.active ? $t('wellnessPlans.markComplete') : $t('wellnessPlans.reactivate') }}
                     </el-dropdown-item>
                     <el-dropdown-item @click="deletePlan(plan.id)" divided>
-                      刪除
+                      {{ $t('common.delete') }}
                     </el-dropdown-item>
                   </el-dropdown-menu>
                 </template>
@@ -46,16 +46,16 @@
             <div class="plan-details">
               <div class="detail-item">
                 <el-icon><Calendar /></el-icon>
-                <span>開始日期：{{ formatDate(plan.startDate) }}</span>
+                <span>{{ $t('wellnessPlans.startDate') }} {{ formatDate(plan.startDate) }}</span>
               </div>
               <div class="detail-item">
                 <el-icon><Flag /></el-icon>
-                <span>目標日期：{{ formatDate(plan.targetDate) }}</span>
+                <span>{{ $t('wellnessPlans.targetDate') }} {{ formatDate(plan.targetDate) }}</span>
               </div>
             </div>
 
             <div class="plan-goals">
-              <h4>每週目標：</h4>
+              <h4>{{ $t('wellnessPlans.weeklyGoals') }}</h4>
               <ul>
                 <li v-for="(goal, index) in plan.goals" :key="index">
                   {{ goal }}
@@ -65,7 +65,7 @@
 
             <div class="plan-progress">
               <div class="progress-header">
-                <span>完成度</span>
+                <span>{{ $t('wellnessPlans.progress') }}</span>
               </div>
               <el-progress :percentage="plan.progress" :color="getProgressColor(plan.progress)" />
             </div>
@@ -76,14 +76,14 @@
 
     <el-empty
       v-if="plans.length === 0"
-      description="還沒有創建任何健康計畫"
+      :description="$t('wellnessPlans.noPlans')"
       :image-size="200"
     />
 
     <!-- Create Plan Dialog -->
     <el-dialog
       v-model="showCreateDialog"
-      title="創建健康計畫"
+      :title="$t('wellnessPlans.createDialogTitle')"
       width="600px"
     >
       <el-form
@@ -92,44 +92,44 @@
         :rules="rules"
         label-width="100px"
       >
-        <el-form-item label="計畫標題" prop="title">
-          <el-input v-model="planForm.title" placeholder="例如：30天健身挑戰" />
+        <el-form-item :label="$t('wellnessPlans.planTitle')" prop="title">
+          <el-input v-model="planForm.title" :placeholder="$t('wellnessPlans.titlePlaceholder')" />
         </el-form-item>
 
-        <el-form-item label="計畫描述" prop="description">
+        <el-form-item :label="$t('wellnessPlans.planDescription')" prop="description">
           <el-input
             v-model="planForm.description"
             type="textarea"
             :rows="3"
-            placeholder="描述您的健康計畫..."
+            :placeholder="$t('wellnessPlans.descriptionPlaceholder')"
           />
         </el-form-item>
 
-        <el-form-item label="開始日期" prop="startDate">
+        <el-form-item :label="$t('wellnessPlans.startDate')" prop="startDate">
           <el-date-picker
             v-model="planForm.startDate"
             type="date"
-            placeholder="選擇開始日期"
+            :placeholder="$t('wellnessPlans.selectStartDate')"
             style="width: 100%"
           />
         </el-form-item>
 
-        <el-form-item label="目標日期" prop="targetDate">
+        <el-form-item :label="$t('wellnessPlans.targetDate')" prop="targetDate">
           <el-date-picker
             v-model="planForm.targetDate"
             type="date"
-            placeholder="選擇目標日期"
+            :placeholder="$t('wellnessPlans.selectTargetDate')"
             style="width: 100%"
           />
         </el-form-item>
 
-        <el-form-item label="每週目標">
+        <el-form-item :label="$t('wellnessPlans.weeklyGoals')">
           <div class="goals-input">
             <el-input
               v-for="(goal, index) in planForm.goals"
               :key="index"
               v-model="planForm.goals[index]"
-              placeholder="輸入目標"
+              :placeholder="$t('wellnessPlans.goalPlaceholder')"
               class="goal-input"
             >
               <template #append>
@@ -141,16 +141,16 @@
               </template>
             </el-input>
             <el-button :icon="Plus" @click="addGoal" class="add-goal-btn">
-              新增目標
+              {{ $t('wellnessPlans.addGoal') }}
             </el-button>
           </div>
         </el-form-item>
       </el-form>
 
       <template #footer>
-        <el-button @click="showCreateDialog = false">取消</el-button>
+        <el-button @click="showCreateDialog = false">{{ $t('common.cancel') }}</el-button>
         <el-button type="primary" @click="handleCreatePlan">
-          創建
+          {{ $t('wellnessPlans.create') }}
         </el-button>
       </template>
     </el-dialog>
@@ -161,7 +161,9 @@
 import { ref, reactive } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { Plus, Delete, Calendar, Flag, MoreFilled } from '@element-plus/icons-vue'
+import { useI18n } from 'vue-i18n'
 
+const { t } = useI18n()
 const showCreateDialog = ref(false)
 const planFormRef = ref(null)
 
@@ -176,10 +178,10 @@ const planForm = reactive({
 })
 
 const rules = {
-  title: [{ required: true, message: '請輸入計畫標題', trigger: 'blur' }],
-  description: [{ required: true, message: '請輸入計畫描述', trigger: 'blur' }],
-  startDate: [{ required: true, message: '請選擇開始日期', trigger: 'change' }],
-  targetDate: [{ required: true, message: '請選擇目標日期', trigger: 'change' }]
+  title: [{ required: true, message: t('wellnessPlans.titleRequired'), trigger: 'blur' }],
+  description: [{ required: true, message: t('wellnessPlans.descriptionRequired'), trigger: 'blur' }],
+  startDate: [{ required: true, message: t('wellnessPlans.startDateRequired'), trigger: 'change' }],
+  targetDate: [{ required: true, message: t('wellnessPlans.targetDateRequired'), trigger: 'change' }]
 }
 
 const addGoal = () => {
@@ -206,7 +208,7 @@ const handleCreatePlan = async () => {
       
       plans.value.unshift(newPlan)
       savePlans()
-      ElMessage.success('健康計畫已創建')
+      ElMessage.success(t('wellnessPlans.createSuccess'))
       showCreateDialog.value = false
       resetForm()
     }
@@ -223,20 +225,24 @@ const togglePlanStatus = (id) => {
       plan.progress = 0
     }
     savePlans()
-    ElMessage.success(plan.active ? '計畫已重新啟動' : '計畫已標記為完成')
+    ElMessage.success(plan.active ? t('wellnessPlans.reactivated') : t('wellnessPlans.markedComplete'))
   }
 }
 
 const deletePlan = async (id) => {
   try {
-    await ElMessageBox.confirm('確定要刪除這個健康計畫嗎？', '確認刪除', {
-      confirmButtonText: '確定',
-      cancelButtonText: '取消',
-      type: 'warning'
-    })
+    await ElMessageBox.confirm(
+      t('wellnessPlans.deleteConfirm'),
+      t('wellnessPlans.deleteTitle'),
+      {
+        confirmButtonText: t('common.confirm'),
+        cancelButtonText: t('common.cancel'),
+        type: 'warning'
+      }
+    )
     plans.value = plans.value.filter(p => p.id !== id)
     savePlans()
-    ElMessage.success('已刪除')
+    ElMessage.success(t('wellnessPlans.deleteSuccess'))
   } catch {
     // User cancelled
   }

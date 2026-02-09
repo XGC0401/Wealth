@@ -1,22 +1,22 @@
 <template>
   <div class="settings-page">
     <div class="page-header">
-      <h1>設定</h1>
-      <p>管理您的帳戶設定</p>
+      <h1>{{ $t('settings.title') }}</h1>
+      <p>{{ $t('settings.subtitle') }}</p>
     </div>
 
     <el-card class="settings-card">
       <template #header>
         <div class="card-header">
           <el-icon :size="24"><User /></el-icon>
-          <span>個人資料</span>
+          <span>{{ $t('settings.personalInfo') }}</span>
         </div>
       </template>
 
       <div class="settings-content">
         <!-- Profile Picture -->
         <div class="setting-item">
-          <div class="setting-label">個人頭像</div>
+          <div class="setting-label">{{ $t('settings.profilePicture') }}</div>
           <div class="profile-picture-section">
             <el-avatar :size="100" :src="profilePicture">
               <el-icon :size="50"><User /></el-icon>
@@ -28,10 +28,10 @@
                 :http-request="handleUpload"
                 accept="image/*"
               >
-                <el-button type="primary" :icon="Upload">上傳頭像</el-button>
+                <el-button type="primary" :icon="Upload">{{ $t('settings.uploadAvatar') }}</el-button>
               </el-upload>
               <el-button v-if="profilePicture" type="danger" :icon="Delete" @click="removeProfilePicture">
-                移除頭像
+                {{ $t('settings.removeAvatar') }}
               </el-button>
             </div>
           </div>
@@ -47,56 +47,56 @@
           label-width="120px"
           label-position="left"
         >
-          <el-form-item label="登入名稱" prop="username">
-            <el-input v-model="formData.username" placeholder="請輸入登入名稱" />
+          <el-form-item :label="$t('auth.loginName')" prop="username">
+            <el-input v-model="formData.username" :placeholder="$t('auth.loginNamePlaceholder')" />
           </el-form-item>
 
-          <el-form-item label="顯示名稱" prop="name">
-            <el-input v-model="formData.name" placeholder="請輸入顯示名稱" />
+          <el-form-item :label="$t('auth.displayName')" prop="name">
+            <el-input v-model="formData.name" :placeholder="$t('auth.displayNamePlaceholder')" />
           </el-form-item>
 
-          <el-form-item label="電子郵件" prop="email">
-            <el-input v-model="formData.email" type="email" placeholder="請輸入電子郵件" />
+          <el-form-item :label="$t('auth.email')" prop="email">
+            <el-input v-model="formData.email" type="email" :placeholder="$t('auth.emailPlaceholder')" />
           </el-form-item>
 
           <el-divider />
 
-          <h3 class="section-title">變更密碼</h3>
-          <p class="section-description">如果您不想變更密碼，請留空</p>
+          <h3 class="section-title">{{ $t('settings.changePassword') }}</h3>
+          <p class="section-description">{{ $t('settings.changePasswordHint') }}</p>
 
-          <el-form-item label="當前密碼" prop="currentPassword">
+          <el-form-item :label="$t('auth.currentPassword')" prop="currentPassword">
             <el-input
               v-model="formData.currentPassword"
               type="password"
-              placeholder="請輸入當前密碼"
+              :placeholder="$t('auth.currentPasswordPlaceholder')"
               show-password
             />
           </el-form-item>
 
-          <el-form-item label="新密碼" prop="newPassword">
+          <el-form-item :label="$t('auth.newPassword')" prop="newPassword">
             <el-input
               v-model="formData.newPassword"
               type="password"
-              placeholder="請輸入新密碼（至少6個字元）"
+              :placeholder="$t('auth.newPasswordPlaceholder')"
               show-password
             />
           </el-form-item>
 
-          <el-form-item label="確認新密碼" prop="confirmPassword">
+          <el-form-item :label="$t('auth.confirmPassword')" prop="confirmPassword">
             <el-input
               v-model="formData.confirmPassword"
               type="password"
-              placeholder="請再次輸入新密碼"
+              :placeholder="$t('auth.confirmPasswordPlaceholder')"
               show-password
             />
           </el-form-item>
 
           <el-form-item>
             <el-button type="primary" :loading="loading" @click="handleSave">
-              儲存變更
+              {{ $t('settings.saveChanges') }}
             </el-button>
             <el-button @click="handleReset">
-              重設
+              {{ $t('common.reset') }}
             </el-button>
           </el-form-item>
         </el-form>
@@ -106,11 +106,13 @@
 </template>
 
 <script setup>
-import { ref, reactive, onMounted } from 'vue'
+import { ref, reactive, onMounted, computed } from 'vue'
 import { useUserStore } from '@/stores/user'
+import { useI18n } from 'vue-i18n'
 import { ElMessage } from 'element-plus'
 
 const userStore = useUserStore()
+const { t } = useI18n()
 const formRef = ref(null)
 const loading = ref(false)
 const profilePicture = ref(null)
@@ -126,30 +128,30 @@ const formData = reactive({
 
 const validateConfirmPassword = (rule, value, callback) => {
   if (value && value !== formData.newPassword) {
-    callback(new Error('兩次輸入的密碼不一致'))
+    callback(new Error(t('auth.passwordMismatch')))
   } else {
     callback()
   }
 }
 
-const rules = {
+const rules = computed(() => ({
   username: [
-    { required: true, message: '請輸入登入名稱', trigger: 'blur' }
+    { required: true, message: t('auth.loginNameRequired'), trigger: 'blur' }
   ],
   name: [
-    { required: true, message: '請輸入顯示名稱', trigger: 'blur' }
+    { required: true, message: t('auth.displayNameRequired'), trigger: 'blur' }
   ],
   email: [
-    { required: true, message: '請輸入電子郵件', trigger: 'blur' },
-    { type: 'email', message: '請輸入有效的電子郵件地址', trigger: ['blur', 'change'] }
+    { required: true, message: t('auth.emailRequired'), trigger: 'blur' },
+    { type: 'email', message: t('auth.emailInvalid'), trigger: ['blur', 'change'] }
   ],
   newPassword: [
-    { min: 6, message: '密碼長度至少 6 個字元', trigger: 'blur' }
+    { min: 6, message: t('auth.passwordMinLength'), trigger: 'blur' }
   ],
   confirmPassword: [
     { validator: validateConfirmPassword, trigger: 'blur' }
   ]
-}
+}))
 
 const loadUserData = () => {
   const user = userStore.currentUser
@@ -166,11 +168,11 @@ const beforeUpload = (file) => {
   const isLt2M = file.size / 1024 / 1024 < 2
 
   if (!isImage) {
-    ElMessage.error('只能上傳圖片檔案！')
+    ElMessage.error(t('settings.avatarUploadError'))
     return false
   }
   if (!isLt2M) {
-    ElMessage.error('圖片大小不能超過 2MB！')
+    ElMessage.error(t('settings.avatarSizeError'))
     return false
   }
   return true
@@ -182,7 +184,7 @@ const handleUpload = (options) => {
   
   reader.onload = (e) => {
     profilePicture.value = e.target.result
-    ElMessage.success('頭像已更新')
+    ElMessage.success(t('settings.avatarUpdated'))
   }
   
   reader.readAsDataURL(file)
@@ -190,7 +192,7 @@ const handleUpload = (options) => {
 
 const removeProfilePicture = () => {
   profilePicture.value = null
-  ElMessage.success('頭像已移除')
+  ElMessage.success(t('settings.avatarRemoved'))
 }
 
 const handleSave = async () => {
@@ -217,17 +219,17 @@ const handleSave = async () => {
         const result = await userStore.updateProfile(updateData)
         
         if (result.success) {
-          ElMessage.success('設定已儲存')
+          ElMessage.success(t('settings.updateSuccess'))
           // Clear password fields
           formData.currentPassword = ''
           formData.newPassword = ''
           formData.confirmPassword = ''
         } else {
-          ElMessage.error(result.message || '儲存失敗')
+          ElMessage.error(result.message || t('settings.updateFailed'))
         }
       } catch (error) {
         console.error('Settings update error:', error)
-        const errorMsg = error.response?.data?.message || error.message || '儲存時發生錯誤'
+        const errorMsg = error.response?.data?.message || error.message || t('settings.updateError')
         ElMessage.error(errorMsg)
       } finally {
         loading.value = false

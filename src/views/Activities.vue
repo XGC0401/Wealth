@@ -1,9 +1,9 @@
 <template>
   <div class="activities-page">
     <div class="page-header">
-      <h1>體能活動記錄</h1>
+      <h1>{{ $t('activities.title') }}</h1>
       <el-button type="primary" :icon="Plus" @click="showAddDialog = true">
-        新增活動
+        {{ $t('activities.addActivity') }}
       </el-button>
     </div>
 
@@ -11,29 +11,29 @@
     <el-card>
       <div v-if="activitiesStore.activities.length > 0">
         <el-table :data="paginatedActivities" stripe style="width: 100%">
-          <el-table-column prop="name" label="活動名稱" min-width="150" />
-          <el-table-column prop="type" label="類型" width="120" />
-          <el-table-column label="時長" width="100">
+          <el-table-column prop="name" :label="$t('activities.activityName')" min-width="150" />
+          <el-table-column prop="type" :label="$t('activities.activityType')" width="120" />
+          <el-table-column :label="$t('activities.duration')" width="100">
             <template #default="{ row }">
-              {{ row.duration }} 分鐘
+              {{ row.duration }} {{ $t('common.minutes') }}
             </template>
           </el-table-column>
-          <el-table-column label="消耗卡路里" width="120">
+          <el-table-column :label="$t('activities.caloriesBurned')" width="120">
             <template #default="{ row }">
-              {{ row.calories || 0 }} 卡
+              {{ row.calories || 0 }} {{ $t('common.kcal') }}
             </template>
           </el-table-column>
-          <el-table-column label="日期" width="180">
+          <el-table-column :label="$t('common.date')" width="180">
             <template #default="{ row }">
               {{ formatDate(row.date) }}
             </template>
           </el-table-column>
-          <el-table-column prop="notes" label="備註" min-width="150">
+          <el-table-column prop="notes" :label="$t('common.notes')" min-width="150">
             <template #default="{ row }">
               {{ row.notes || '-' }}
             </template>
           </el-table-column>
-          <el-table-column label="操作" width="100" fixed="right">
+          <el-table-column :label="$t('common.operation')" width="100" fixed="right">
             <template #default="{ row }">
               <el-button
                 type="danger"
@@ -42,7 +42,7 @@
                 @click="handleDelete(row.id)"
                 link
               >
-                刪除
+                {{ $t('common.delete') }}
               </el-button>
             </template>
           </el-table-column>
@@ -59,13 +59,13 @@
         </div>
       </div>
 
-      <el-empty v-else description="還沒有任何活動記錄" :image-size="200" />
+      <el-empty v-else :description="$t('activities.noActivities')" :image-size="200" />
     </el-card>
 
     <!-- Add Activity Dialog -->
     <el-dialog
       v-model="showAddDialog"
-      title="新增體能活動"
+      :title="$t('activities.addDialogTitle')"
       width="500px"
     >
       <el-form
@@ -74,22 +74,22 @@
         :rules="rules"
         label-width="100px"
       >
-        <el-form-item label="活動名稱" prop="name">
-          <el-input v-model="activityForm.name" placeholder="例如：慢跑" />
+        <el-form-item :label="$t('activities.activityName')" prop="name">
+          <el-input v-model="activityForm.name" :placeholder="$t('activities.namePlaceholder')" />
         </el-form-item>
 
-        <el-form-item label="活動類型" prop="type">
-          <el-select v-model="activityForm.type" placeholder="請選擇類型" style="width: 100%">
-            <el-option label="有氧運動" value="有氧運動" />
-            <el-option label="重量訓練" value="重量訓練" />
-            <el-option label="瑜珈" value="瑜珈" />
-            <el-option label="伸展運動" value="伸展運動" />
-            <el-option label="球類運動" value="球類運動" />
-            <el-option label="其他" value="其他" />
+        <el-form-item :label="$t('activities.activityType')" prop="type">
+          <el-select v-model="activityForm.type" :placeholder="$t('activities.typePlaceholder')" style="width: 100%">
+            <el-option :label="$t('activities.typeAerobic')" value="有氧運動" />
+            <el-option :label="$t('activities.typeStrength')" value="重量訓練" />
+            <el-option :label="$t('activities.typeYoga')" value="瑜珈" />
+            <el-option :label="$t('activities.typeFlexibility')" value="伸展運動" />
+            <el-option :label="$t('activities.typeSports')" value="球類運動" />
+            <el-option :label="$t('activities.typeOther')" value="其他" />
           </el-select>
         </el-form-item>
 
-        <el-form-item label="時長（分鐘）" prop="duration">
+        <el-form-item :label="$t('activities.duration')" prop="duration">
           <el-input-number
             v-model="activityForm.duration"
             :min="1"
@@ -98,7 +98,7 @@
           />
         </el-form-item>
 
-        <el-form-item label="消耗卡路里" prop="calories">
+        <el-form-item :label="$t('activities.caloriesBurned')" prop="calories">
           <el-input-number
             v-model="activityForm.calories"
             :min="0"
@@ -107,20 +107,20 @@
           />
         </el-form-item>
 
-        <el-form-item label="備註">
+        <el-form-item :label="$t('common.notes')">
           <el-input
             v-model="activityForm.notes"
             type="textarea"
             :rows="3"
-            placeholder="其他備註..."
+            :placeholder="$t('activities.notesPlaceholder')"
           />
         </el-form-item>
       </el-form>
 
       <template #footer>
-        <el-button @click="showAddDialog = false">取消</el-button>
+        <el-button @click="showAddDialog = false">{{ $t('common.cancel') }}</el-button>
         <el-button type="primary" @click="handleAddActivity">
-          確定
+          {{ $t('common.confirm') }}
         </el-button>
       </template>
     </el-dialog>
@@ -132,7 +132,9 @@ import { ref, reactive, computed } from 'vue'
 import { useActivitiesStore } from '@/stores/activities'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { Plus, Delete } from '@element-plus/icons-vue'
+import { useI18n } from 'vue-i18n'
 
+const { t } = useI18n()
 const activitiesStore = useActivitiesStore()
 const showAddDialog = ref(false)
 const activityFormRef = ref(null)
@@ -148,9 +150,9 @@ const activityForm = reactive({
 })
 
 const rules = {
-  name: [{ required: true, message: '請輸入活動名稱', trigger: 'blur' }],
-  type: [{ required: true, message: '請選擇活動類型', trigger: 'change' }],
-  duration: [{ required: true, message: '請輸入時長', trigger: 'blur' }]
+  name: [{ required: true, message: t('activities.nameRequired'), trigger: 'blur' }],
+  type: [{ required: true, message: t('activities.typeRequired'), trigger: 'change' }],
+  duration: [{ required: true, message: t('activities.durationRequired'), trigger: 'blur' }]
 }
 
 const paginatedActivities = computed(() => {
@@ -165,7 +167,7 @@ const handleAddActivity = async () => {
   await activityFormRef.value.validate((valid) => {
     if (valid) {
       activitiesStore.addActivity({ ...activityForm })
-      ElMessage.success('活動已新增')
+      ElMessage.success(t('activities.addSuccess'))
       showAddDialog.value = false
       resetForm()
     }
@@ -174,13 +176,17 @@ const handleAddActivity = async () => {
 
 const handleDelete = async (id) => {
   try {
-    await ElMessageBox.confirm('確定要刪除這筆活動記錄嗎？', '確認刪除', {
-      confirmButtonText: '確定',
-      cancelButtonText: '取消',
-      type: 'warning'
-    })
+    await ElMessageBox.confirm(
+      t('activities.deleteConfirm'),
+      t('activities.deleteTitle'),
+      {
+        confirmButtonText: t('common.confirm'),
+        cancelButtonText: t('common.cancel'),
+        type: 'warning'
+      }
+    )
     activitiesStore.deleteActivity(id)
-    ElMessage.success('已刪除')
+    ElMessage.success(t('activities.deleteSuccess'))
   } catch {
     // User cancelled
   }

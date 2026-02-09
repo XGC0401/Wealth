@@ -1,9 +1,9 @@
 <template>
   <div class="community-page">
     <div class="page-header">
-      <h1>社群分享</h1>
+      <h1>{{ $t('community.title') }}</h1>
       <el-button type="primary" :icon="Plus" @click="showPostDialog = true">
-        分享動態
+        {{ $t('community.sharePost') }}
       </el-button>
     </div>
 
@@ -30,7 +30,7 @@
             <template #dropdown>
               <el-dropdown-menu>
                 <el-dropdown-item @click="deletePost(post.id)">
-                  刪除
+                  {{ $t('common.delete') }}
                 </el-dropdown-item>
               </el-dropdown-menu>
             </template>
@@ -43,7 +43,7 @@
             <img :src="post.image" alt="Post image" />
           </div>
           <el-tag v-if="post.category" type="info" size="small" class="post-category">
-            #{{ post.category }}
+            #{{ getCategoryName(post.category) }}
           </el-tag>
         </div>
 
@@ -68,13 +68,13 @@
             :icon="post.isLiked ? StarFilled : Star"
             @click="toggleLike(post.id)"
           >
-            {{ post.isLiked ? '已點讚' : '點讚' }}
+            {{ post.isLiked ? $t('community.liked') : $t('community.like') }}
           </el-button>
           <el-button text :icon="ChatDotRound">
-            留言
+            {{ $t('community.comment') }}
           </el-button>
           <el-button text :icon="Share">
-            分享
+            {{ $t('community.share') }}
           </el-button>
         </div>
       </el-card>
@@ -82,14 +82,14 @@
 
     <el-empty
       v-if="posts.length === 0"
-      description="還沒有任何動態"
+      :description="$t('community.noPosts')"
       :image-size="200"
     />
 
     <!-- Create Post Dialog -->
     <el-dialog
       v-model="showPostDialog"
-      title="分享動態"
+      :title="$t('community.sharePost')"
       width="600px"
     >
       <el-form
@@ -98,32 +98,32 @@
         :rules="rules"
         label-width="80px"
       >
-        <el-form-item label="分享內容" prop="content">
+        <el-form-item :label="$t('community.content')" prop="content">
           <el-input
             v-model="postForm.content"
             type="textarea"
             :rows="6"
-            placeholder="分享您的健康心得、運動成果或飲食經驗..."
+            :placeholder="$t('community.contentPlaceholder')"
             maxlength="500"
             show-word-limit
           />
         </el-form-item>
 
-        <el-form-item label="分類標籤">
-          <el-select v-model="postForm.category" placeholder="選擇分類（可選）" style="width: 100%">
-            <el-option label="運動健身" value="運動健身" />
-            <el-option label="健康飲食" value="健康飲食" />
-            <el-option label="心理健康" value="心理健康" />
-            <el-option label="生活分享" value="生活分享" />
-            <el-option label="經驗交流" value="經驗交流" />
+        <el-form-item :label="$t('community.category')">
+          <el-select v-model="postForm.category" :placeholder="$t('community.categoryPlaceholder')" style="width: 100%">
+            <el-option :label="$t('community.categoryFitness')" value="fitness" />
+            <el-option :label="$t('community.categoryDiet')" value="diet" />
+            <el-option :label="$t('community.categoryMentalHealth')" value="mentalHealth" />
+            <el-option :label="$t('community.categoryLifestyle')" value="lifestyle" />
+            <el-option :label="$t('community.categoryExperience')" value="experience" />
           </el-select>
         </el-form-item>
       </el-form>
 
       <template #footer>
-        <el-button @click="showPostDialog = false">取消</el-button>
+        <el-button @click="showPostDialog = false">{{ $t('common.cancel') }}</el-button>
         <el-button type="primary" @click="handleCreatePost">
-          發布
+          {{ $t('community.publish') }}
         </el-button>
       </template>
     </el-dialog>
@@ -138,6 +138,9 @@ import {
   Plus, User, MoreFilled, ChatDotRound, 
   Share, Star, StarFilled 
 } from '@element-plus/icons-vue'
+import { useI18n } from 'vue-i18n'
+
+const { t } = useI18n()
 
 const userStore = useUserStore()
 const showPostDialog = ref(false)
@@ -154,9 +157,9 @@ if (posts.value.length === 0) {
   posts.value = [
     {
       id: 1,
-      username: '健康達人',
+      username: 'Health Enthusiast',
       content: '今天完成了10公里慢跑！感覺超棒的，大家一起加油！💪',
-      category: '運動健身',
+      category: 'fitness',
       likes: 15,
       comments: 3,
       shares: 2,
@@ -166,9 +169,9 @@ if (posts.value.length === 0) {
     },
     {
       id: 2,
-      username: '營養師小美',
+      username: 'Nutritionist Amy',
       content: '分享一個簡單又健康的早餐食譜：燕麥片 + 藍莓 + 堅果，營養滿分！',
-      category: '健康飲食',
+      category: 'diet',
       likes: 28,
       comments: 7,
       shares: 5,
@@ -178,9 +181,9 @@ if (posts.value.length === 0) {
     },
     {
       id: 3,
-      username: '冥想愛好者',
+      username: 'Meditation Lover',
       content: '每天早晨的冥想練習讓我一整天都充滿能量。強烈推薦大家試試！🧘‍♀️',
-      category: '心理健康',
+      category: 'mentalHealth',
       likes: 20,
       comments: 4,
       shares: 3,
@@ -199,8 +202,8 @@ const postForm = reactive({
 
 const rules = {
   content: [
-    { required: true, message: '請輸入分享內容', trigger: 'blur' },
-    { min: 10, message: '內容至少需要 10 個字', trigger: 'blur' }
+    { required: true, message: t('community.contentRequired'), trigger: 'blur' },
+    { min: 10, message: t('community.contentMinLength'), trigger: 'blur' }
   ]
 }
 
@@ -211,7 +214,7 @@ const handleCreatePost = async () => {
     if (valid) {
       const newPost = {
         id: Date.now(),
-        username: userStore.currentUser?.name || '使用者',
+        username: userStore.currentUser?.name || t('common.user'),
         content: postForm.content,
         category: postForm.category,
         likes: 0,
@@ -224,7 +227,7 @@ const handleCreatePost = async () => {
       
       posts.value.unshift(newPost)
       savePosts()
-      ElMessage.success('動態已發布')
+      ElMessage.success(t('community.publishSuccess'))
       showPostDialog.value = false
       resetForm()
     }
@@ -242,14 +245,17 @@ const toggleLike = (id) => {
 
 const deletePost = async (id) => {
   try {
-    await ElMessageBox.confirm('確定要刪除這則動態嗎？', '確認刪除', {
-      confirmButtonText: '確定',
-      cancelButtonText: '取消',
+    await ElMessageBox.confirm(
+      t('community.deleteConfirm'),
+      t('community.deleteTitle'),
+      {
+        confirmButtonText: t('common.confirm'),
+        cancelButtonText: t('common.cancel'),
       type: 'warning'
     })
     posts.value = posts.value.filter(p => p.id !== id)
     savePosts()
-    ElMessage.success('已刪除')
+    ElMessage.success(t('community.deleteSuccess'))
   } catch {
     // User cancelled
   }
@@ -271,12 +277,23 @@ const formatTime = (date) => {
   const hours = Math.floor(minutes / 60)
   const days = Math.floor(hours / 24)
 
-  if (minutes < 1) return '剛剛'
-  if (minutes < 60) return `${minutes} 分鐘前`
-  if (hours < 24) return `${hours} 小時前`
-  if (days < 7) return `${days} 天前`
+  if (minutes < 1) return t('common.justNow')
+  if (minutes < 60) return t('common.minutesAgo', { n: minutes })
+  if (hours < 24) return t('common.hoursAgo', { n: hours })
+  if (days < 7) return t('common.daysAgo', { n: days })
   
-  return postDate.toLocaleDateString('zh-TW')
+  return postDate.toLocaleDateString()
+}
+
+const getCategoryName = (category) => {
+  const categoryMap = {
+    'fitness': 'community.categoryFitness',
+    'diet': 'community.categoryDiet',
+    'mentalHealth': 'community.categoryMentalHealth',
+    'lifestyle': 'community.categoryLifestyle',
+    'experience': 'community.categoryExperience'
+  }
+  return t(categoryMap[category] || category)
 }
 </script>
 

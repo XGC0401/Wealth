@@ -94,8 +94,8 @@ export const useBookingStore = defineStore('booking', {
       const hospital = this.getHospitalById(booking.hospitalId)
       if (hospital) {
         remindersStore.addReminder({
-          title: `醫院預約：${hospital.name}`,
-          description: `預約科別：${booking.department}\n預約日期：${booking.date}\n預約時間：${booking.time}\n地點：${hospital.address}`,
+          title: `${hospital.name}`,
+          description: `${booking.department}\n${booking.date}\n${booking.time}\n${hospital.address}`,
           time: `${booking.date} ${booking.time}`,
           type: 'appointment',
           active: true
@@ -192,20 +192,20 @@ export const useBookingStore = defineStore('booking', {
           
           return {
             id: item.id || Date.now() + index,
-            name: item.tags?.['name:zh'] || item.tags?.name || (isHospital ? '醫院' : '診所'),
+            name: item.tags?.['name:zh'] || item.tags?.name || (isHospital ? 'Hospital' : 'Clinic'),
             type: isHospital ? 'hospital' : 'clinic',
-            address: item.tags?.['addr:full'] || item.tags?.['addr:street'] || '地址未提供',
-            phone: item.tags?.phone || item.tags?.['contact:phone'] || '電話未提供',
+            address: item.tags?.['addr:full'] || item.tags?.['addr:street'] || 'Address not provided',
+            phone: item.tags?.phone || item.tags?.['contact:phone'] || 'Phone not provided',
             rating: Math.round((4.0 + Math.random() * 0.5) * 100) / 100, // Simulated rating 4.0-4.5, rounded to 2 decimals
             currentWaitingPeople: Math.floor(Math.random() * 60) + 10,
             distance: 0, // Will be calculated based on user location
             image: 'https://img.freepik.com/free-photo/hospital-building_1127-3375.jpg',
             openTime: item.tags?.['opening_hours:start'] || '08:00',
             closeTime: item.tags?.['opening_hours:end'] || '20:00',
-            workingDays: ['一', '二', '三', '四', '五', '六', '日'],
+            workingDays: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
             departments: isHospital 
-              ? ['內科', '外科', '急診科', '骨科', '兒科'] 
-              : ['家庭醫學科', '內科', '兒科'],
+              ? ['Internal Medicine', 'Surgery', 'Emergency', 'Orthopedics', 'Pediatrics'] 
+              : ['Family Medicine', 'Internal Medicine', 'Pediatrics'],
             coordinates: { lat, lng: lon }
           }
         }).filter(h => h.coordinates.lat && h.coordinates.lng) // Remove items without coordinates
@@ -213,18 +213,18 @@ export const useBookingStore = defineStore('booking', {
         this.hospitals = hospitals
         this.lastFetchTime = Date.now()
         
-        console.log(`成功載入 ${hospitals.length} 間醫院和診所`)
+        console.log(`Successfully loaded ${hospitals.length} hospitals and clinics`)
       } catch (error) {
-        console.error('載入醫院數據失敗:', error)
-        this.error = `無法載入醫院數據: ${error.message}`
+        console.error('Failed to load hospital data:', error)
+        this.error = `Unable to load hospital data: ${error.message}`
         
         // Fallback: Use minimal sample data if API fails
         this.hospitals = [
           {
             id: 1,
-            name: '香港瑪麗醫院',
+            name: 'Queen Mary Hospital',
             type: 'hospital',
-            address: '香港薄扶林薄扶林道102號',
+            address: '102 Pok Fu Lam Road, Pok Fu Lam, Hong Kong',
             phone: '+852 2255 3838',
             rating: 4.6,
             currentWaitingPeople: 52,
@@ -232,8 +232,8 @@ export const useBookingStore = defineStore('booking', {
             image: 'https://img.freepik.com/free-photo/hospital-building_1127-3375.jpg',
             openTime: '08:00',
             closeTime: '22:00',
-            workingDays: ['一', '二', '三', '四', '五', '六', '日'],
-            departments: ['內科', '外科', '急診科', '骨科', '心臟科'],
+            workingDays: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
+            departments: ['Internal Medicine', 'Surgery', 'Emergency', 'Orthopedics', 'Cardiology'],
             coordinates: { lat: 22.2697, lng: 114.1350 }
           }
         ]
