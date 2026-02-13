@@ -169,39 +169,16 @@ const handleRegister = async () => {
       try {
         const result = await userStore.register(registerForm)
         if (result.success) {
-          // Clear all stores first to ensure clean state
-          const { useActivitiesStore } = await import('@/stores/activities')
-          const { useDietStore } = await import('@/stores/diet')
-          const { useMentalHealthStore } = await import('@/stores/mentalHealth')
-          const { useRemindersStore } = await import('@/stores/reminders')
-          const { useProfileStore } = await import('@/stores/profile')
-          
-          const activitiesStore = useActivitiesStore()
-          const dietStore = useDietStore()
-          const mentalHealthStore = useMentalHealthStore()
-          const remindersStore = useRemindersStore()
-          const profileStore = useProfileStore()
-          
-          // Reset all stores
-          activitiesStore.$reset()
-          dietStore.$reset()
-          mentalHealthStore.$reset()
-          remindersStore.$reset()
-          profileStore.$reset()
-          
-          // Load new user data
-          activitiesStore.loadActivities()
-          dietStore.loadMeals()
-          mentalHealthStore.loadPractices()
-          remindersStore.loadReminders()
-          profileStore.loadProfile()
-          
           ElMessage.success(t('auth.registerSuccess'))
-          router.push('/')
+          // 確保狀態已更新再跳轉
+          setTimeout(() => {
+            router.push('/')
+          }, 100)
         } else {
           ElMessage.error(result.message || t('auth.registerError'))
         }
       } catch (error) {
+        console.error('註冊錯誤:', error)
         ElMessage.error(t('auth.registerError'))
       } finally {
         loading.value = false
