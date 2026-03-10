@@ -333,6 +333,7 @@ export default {
     descriptionRequired: 'Please enter plan description',
     startDateRequired: 'Please select start date',
     targetDateRequired: 'Please select target date',
+    targetDateInvalid: 'Target date cannot be earlier than start date',
     createSuccess: 'Wellness plan created',
     reactivated: 'Plan reactivated',
     markedComplete: 'Plan marked as complete',

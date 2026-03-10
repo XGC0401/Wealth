@@ -1,5 +1,8 @@
 import { defineStore } from 'pinia'
 import { useUserStore } from './user'
+import axios from 'axios'
+
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000'
 
 export const useMentalHealthStore = defineStore('mentalHealth', {
   state: () => ({
@@ -7,35 +10,65 @@ export const useMentalHealthStore = defineStore('mentalHealth', {
   }),
 
   actions: {
-    loadPractices() {
+    async loadPractices() {
       const userStore = useUserStore()
       if (userStore.userId) {
-        const key = `mentalPractices_${userStore.userId}`
-        this.practices = JSON.parse(localStorage.getItem(key)) || []
+        try {
+          const response = await axios.get(`${API_BASE_URL}/api/mental-health/${userStore.userId}`)
+          this.practices = response.data || []
+        } catch (error) {
+          console.error('載入心理健康紀錄失敗:', error)
+          this.practices = []
+        }
       }
     },
 
-    addPractice(practice) {
-      const newPractice = {
-        id: Date.now(),
-        ...practice,
-        date: practice.date || new Date().toISOString()
+    async addPractice(practice) {
+      const userStore = useUserStore()
+      if (!userStore.userId) {
+        return { success: false, message: '使用者未登入' }
       }
-      this.practices.unshift(newPractice)
-      this.saveToStorage()
+
+      try {
+        const response = await axios.post(`${API_BASE_URL}/api/mental-health`, {
+          userId: userStore.userId,
+          name: practice.name,
+          type: practice.type,
+          duration: practice.duration || 0,
+          mood: practice.mood || null,
+          notes: practice.notes || '',
+          date: practice.date || new Date().toISOString()
+        })
+
+        this.practices.unshift(response.data.practice)
+        return { success: true }
+      } catch (error) {
+        console.error('新增心理健康紀錄失敗:', error)
+        return { success: false, message: error.response?.data?.message || '新增失敗' }
+      }
     },
 
-    deletePractice(id) {
-      this.practices = this.practices.filter(p => p.id !== id)
-      this.saveToStorage()
+    async deletePractice(id) {
+      const userStore = useUserStore()
+      if (!userStore.userId) {
+        return { success: false, message: '使用者未登入' }
+      }
+
+      try {
+        await axios.delete(`${API_BASE_URL}/api/mental-health/${id}`, {
+          params: { userId: userStore.userId }
+        })
+
+        this.practices = this.practices.filter(p => p.id !== id)
+        return { success: true }
+      } catch (error) {
+        console.error('刪除心理健康紀錄失敗:', error)
+        return { success: false, message: error.response?.data?.message || '刪除失敗' }
+      }
     },
 
     saveToStorage() {
-      const userStore = useUserStore()
-      if (userStore.userId) {
-        const key = `mentalPractices_${userStore.userId}`
-        localStorage.setItem(key, JSON.stringify(this.practices))
-      }
+      return
     },
 
     clearData() {

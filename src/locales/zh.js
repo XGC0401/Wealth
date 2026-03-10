@@ -333,6 +333,7 @@ export default {
     descriptionRequired: '請輸入計畫描述',
     startDateRequired: '請選擇開始日期',
     targetDateRequired: '請選擇目標日期',
+    targetDateInvalid: '目標日期不可早於開始日期',
     createSuccess: '健康計畫已創建',
     reactivated: '計畫已重新啟動',
     markedComplete: '計畫已標記為完成',

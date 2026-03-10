@@ -1,5 +1,8 @@
 import { defineStore } from 'pinia'
 import { useUserStore } from './user'
+import axios from 'axios'
+
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000'
 
 export const useRemindersStore = defineStore('reminders', {
   state: () => ({
@@ -7,43 +10,86 @@ export const useRemindersStore = defineStore('reminders', {
   }),
 
   actions: {
-    loadReminders() {
+    async loadReminders() {
       const userStore = useUserStore()
       if (userStore.userId) {
-        const key = `reminders_${userStore.userId}`
-        this.reminders = JSON.parse(localStorage.getItem(key)) || []
+        try {
+          const response = await axios.get(`${API_BASE_URL}/api/reminders/${userStore.userId}`)
+          this.reminders = response.data || []
+        } catch (error) {
+          console.error('載入提醒失敗:', error)
+          this.reminders = []
+        }
       }
     },
 
-    addReminder(reminder) {
-      const newReminder = {
-        id: Date.now(),
-        ...reminder,
-        createdAt: new Date().toISOString()
+    async addReminder(reminder) {
+      const userStore = useUserStore()
+      if (!userStore.userId) {
+        return { success: false, message: '使用者未登入' }
       }
-      this.reminders.push(newReminder)
-      this.saveToStorage()
+
+      try {
+        const response = await axios.post(`${API_BASE_URL}/api/reminders`, {
+          userId: userStore.userId,
+          title: reminder.title,
+          description: reminder.description,
+          type: reminder.type,
+          time: reminder.time,
+          active: reminder.active !== false
+        })
+
+        this.reminders.unshift(response.data.reminder)
+        return { success: true }
+      } catch (error) {
+        console.error('新增提醒失敗:', error)
+        return { success: false, message: error.response?.data?.message || '新增失敗' }
+      }
     },
 
-    deleteReminder(id) {
-      this.reminders = this.reminders.filter(r => r.id !== id)
-      this.saveToStorage()
+    async deleteReminder(id) {
+      const userStore = useUserStore()
+      if (!userStore.userId) {
+        return { success: false, message: '使用者未登入' }
+      }
+
+      try {
+        await axios.delete(`${API_BASE_URL}/api/reminders/${id}`, {
+          params: { userId: userStore.userId }
+        })
+
+        this.reminders = this.reminders.filter(r => r.id !== id)
+        return { success: true }
+      } catch (error) {
+        console.error('刪除提醒失敗:', error)
+        return { success: false, message: error.response?.data?.message || '刪除失敗' }
+      }
     },
 
-    toggleReminder(id) {
-      const reminder = this.reminders.find(r => r.id === id)
-      if (reminder) {
-        reminder.active = !reminder.active
-        this.saveToStorage()
+    async toggleReminder(id) {
+      const userStore = useUserStore()
+      if (!userStore.userId) {
+        return { success: false, message: '使用者未登入' }
+      }
+
+      try {
+        const response = await axios.put(`${API_BASE_URL}/api/reminders/${id}/toggle`, {
+          userId: userStore.userId
+        })
+
+        const index = this.reminders.findIndex(r => r.id === id)
+        if (index !== -1) {
+          this.reminders[index] = response.data.reminder
+        }
+        return { success: true }
+      } catch (error) {
+        console.error('切換提醒狀態失敗:', error)
+        return { success: false, message: error.response?.data?.message || '更新失敗' }
       }
     },
 
     saveToStorage() {
-      const userStore = useUserStore()
-      if (userStore.userId) {
-        const key = `reminders_${userStore.userId}`
-        localStorage.setItem(key, JSON.stringify(this.reminders))
-      }
+      return
     },
 
     clearData() {

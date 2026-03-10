@@ -121,7 +121,7 @@
 </template>
 
 <script setup>
-import { ref, reactive } from 'vue'
+import { ref, reactive, onMounted } from 'vue'
 import { useMentalHealthStore } from '@/stores/mentalHealth'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { Plus, Delete, Clock, Calendar, Sunny, Promotion, MagicStick } from '@element-plus/icons-vue'
@@ -181,15 +181,19 @@ const getPracticeTagType = (type) => {
 
 const handleAddPractice = async () => {
   if (!practiceFormRef.value) return
-  
-  await practiceFormRef.value.validate((valid) => {
-    if (valid) {
-      mentalHealthStore.addPractice({ ...practiceForm })
-      ElMessage.success(t('mentalHealth.addSuccess'))
-      showAddDialog.value = false
-      resetForm()
-    }
-  })
+
+  const valid = await practiceFormRef.value.validate().catch(() => false)
+  if (!valid) return
+
+  const result = await mentalHealthStore.addPractice({ ...practiceForm })
+  if (result.success) {
+    ElMessage.success(t('mentalHealth.addSuccess'))
+    showAddDialog.value = false
+    resetForm()
+    return
+  }
+
+  ElMessage.error(result.message || t('common.error'))
 }
 
 const handleDelete = async (id) => {
@@ -203,8 +207,13 @@ const handleDelete = async (id) => {
         type: 'warning'
       }
     )
-    mentalHealthStore.deletePractice(id)
-    ElMessage.success(t('mentalHealth.deleteSuccess'))
+    const result = await mentalHealthStore.deletePractice(id)
+    if (result.success) {
+      ElMessage.success(t('mentalHealth.deleteSuccess'))
+      return
+    }
+
+    ElMessage.error(result.message || t('common.error'))
   } catch {
     // User cancelled
   }
@@ -231,6 +240,10 @@ const formatDate = (date) => {
   if (days === 1) return '昨天'
   return d.toLocaleDateString('zh-TW')
 }
+
+onMounted(() => {
+  mentalHealthStore.loadPractices()
+})
 </script>
 
 <style scoped>

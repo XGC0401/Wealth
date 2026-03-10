@@ -180,7 +180,7 @@
 </template>
 
 <script setup>
-import { ref, reactive, computed } from 'vue'
+import { ref, reactive, computed, onMounted } from 'vue'
 import { useDietStore } from '@/stores/diet'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { Plus, Delete } from '@element-plus/icons-vue'
@@ -234,15 +234,19 @@ const getMealTypeColor = (type) => {
 
 const handleAddMeal = async () => {
   if (!mealFormRef.value) return
-  
-  await mealFormRef.value.validate((valid) => {
-    if (valid) {
-      dietStore.addMeal({ ...mealForm })
-      ElMessage.success(t('diet.addSuccess'))
-      showAddDialog.value = false
-      resetForm()
-    }
-  })
+
+  const valid = await mealFormRef.value.validate().catch(() => false)
+  if (!valid) return
+
+  const result = await dietStore.addMeal({ ...mealForm })
+  if (result.success) {
+    ElMessage.success(t('diet.addSuccess'))
+    showAddDialog.value = false
+    resetForm()
+    return
+  }
+
+  ElMessage.error(result.message || t('common.error'))
 }
 
 const handleDelete = async (id) => {
@@ -256,8 +260,13 @@ const handleDelete = async (id) => {
         type: 'warning'
       }
     )
-    dietStore.deleteMeal(id)
-    ElMessage.success(t('diet.deleteSuccess'))
+    const result = await dietStore.deleteMeal(id)
+    if (result.success) {
+      ElMessage.success(t('diet.deleteSuccess'))
+      return
+    }
+
+    ElMessage.error(result.message || t('common.error'))
   } catch {
     // User cancelled
   }
@@ -289,6 +298,10 @@ const formatDate = (date) => {
     minute: '2-digit'
   })
 }
+
+onMounted(() => {
+  dietStore.loadMeals()
+})
 </script>
 
 <style scoped>

@@ -767,38 +767,39 @@ const handleDateChange = () => {
 
 const handleBooking = async () => {
   if (!bookingFormRef.value) return
-  
-  await bookingFormRef.value.validate((valid) => {
-    if (valid) {
-      bookingLoading.value = true
-      
-      setTimeout(() => {
-        const booking = {
-          hospitalId: selectedHospital.value.id,
-          hospitalName: selectedHospital.value.name,
-          department: bookingForm.department,
-          date: bookingForm.date,
-          time: bookingForm.time,
-          patientName: bookingForm.patientName,
-          phone: bookingForm.phone,
-          notes: bookingForm.notes
-        }
-        
-        bookingStore.createBooking(booking)
-        
-        ElMessage.success({
-          message: t('booking.bookingSuccess'),
-          duration: 3000
-        })
-        
-        showDetailDialog.value = false
-        resetBookingForm()
-        bookingLoading.value = false
-      }, 1000)
-    } else {
-      ElMessage.error(t('booking.fillAllFields'))
-    }
-  })
+
+  const valid = await bookingFormRef.value.validate().catch(() => false)
+  if (!valid) {
+    ElMessage.error(t('booking.fillAllFields'))
+    return
+  }
+
+  bookingLoading.value = true
+  const booking = {
+    hospitalId: selectedHospital.value.id,
+    hospitalName: selectedHospital.value.name,
+    department: bookingForm.department,
+    date: bookingForm.date,
+    time: bookingForm.time,
+    patientName: bookingForm.patientName,
+    phone: bookingForm.phone,
+    notes: bookingForm.notes
+  }
+
+  const result = await bookingStore.createBooking(booking)
+  bookingLoading.value = false
+
+  if (result.success) {
+    ElMessage.success({
+      message: t('booking.bookingSuccess'),
+      duration: 3000
+    })
+    showDetailDialog.value = false
+    resetBookingForm()
+    return
+  }
+
+  ElMessage.error(result.message || t('common.error'))
 }
 
 const resetBookingForm = () => {
@@ -827,9 +828,14 @@ const handleCancelBooking = (bookingId) => {
       cancelButtonText: t('common.cancel'),
       type: 'warning'
     }
-  ).then(() => {
-    bookingStore.cancelBooking(bookingId)
-    ElMessage.success(t('booking.cancelledSuccess'))
+  ).then(async () => {
+    const result = await bookingStore.cancelBooking(bookingId)
+    if (result.success) {
+      ElMessage.success(t('booking.cancelledSuccess'))
+      return
+    }
+
+    ElMessage.error(result.message || t('common.error'))
   }).catch(() => {
     // Cancelled
   })
@@ -844,9 +850,14 @@ const handleDeleteBooking = (bookingId) => {
       cancelButtonText: t('common.cancel'),
       type: 'warning'
     }
-  ).then(() => {
-    bookingStore.deleteBooking(bookingId)
-    ElMessage.success(t('booking.deletedSuccess'))
+  ).then(async () => {
+    const result = await bookingStore.deleteBooking(bookingId)
+    if (result.success) {
+      ElMessage.success(t('booking.deletedSuccess'))
+      return
+    }
+
+    ElMessage.error(result.message || t('common.error'))
   }).catch(() => {
     // Cancelled
   })
@@ -873,7 +884,7 @@ watch(viewMode, (newMode) => {
 let updateInterval = null
 
 onMounted(async () => {
-  bookingStore.loadBookings()
+  await bookingStore.loadBookings()
   
   // Fetch hospitals from OpenStreetMap API
   await bookingStore.fetchHospitalsFromAPI()

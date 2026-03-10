@@ -131,7 +131,7 @@
 </template>
 
 <script setup>
-import { ref, reactive } from 'vue'
+import { ref, reactive, onMounted } from 'vue'
 import { useUserStore } from '@/stores/user'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { 
@@ -139,6 +139,9 @@ import {
   Share, Star, StarFilled 
 } from '@element-plus/icons-vue'
 import { useI18n } from 'vue-i18n'
+import axios from 'axios'
+
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000'
 
 const { t } = useI18n()
 
@@ -146,53 +149,17 @@ const userStore = useUserStore()
 const showPostDialog = ref(false)
 const postFormRef = ref(null)
 
-const posts = ref(JSON.parse(localStorage.getItem('communityPosts') || '[]'))
+const posts = ref([])
 
-const savePosts = () => {
-  localStorage.setItem('communityPosts', JSON.stringify(posts.value))
-}
-
-// Add some sample posts if empty
-if (posts.value.length === 0) {
-  posts.value = [
-    {
-      id: 1,
-      username: 'Health Enthusiast',
-      content: '今天完成了10公里慢跑！感覺超棒的，大家一起加油！💪',
-      category: 'fitness',
-      likes: 15,
-      comments: 3,
-      shares: 2,
-      isLiked: false,
-      isMine: false,
-      createdAt: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString()
-    },
-    {
-      id: 2,
-      username: 'Nutritionist Amy',
-      content: '分享一個簡單又健康的早餐食譜：燕麥片 + 藍莓 + 堅果，營養滿分！',
-      category: 'diet',
-      likes: 28,
-      comments: 7,
-      shares: 5,
-      isLiked: false,
-      isMine: false,
-      createdAt: new Date(Date.now() - 5 * 60 * 60 * 1000).toISOString()
-    },
-    {
-      id: 3,
-      username: 'Meditation Lover',
-      content: '每天早晨的冥想練習讓我一整天都充滿能量。強烈推薦大家試試！🧘‍♀️',
-      category: 'mentalHealth',
-      likes: 20,
-      comments: 4,
-      shares: 3,
-      isLiked: false,
-      isMine: false,
-      createdAt: new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString()
-    }
-  ]
-  savePosts()
+const loadPosts = async () => {
+  if (!userStore.userId) return
+  try {
+    const response = await axios.get(`${API_BASE_URL}/api/community-posts/${userStore.userId}`)
+    posts.value = response.data || []
+  } catch (error) {
+    console.error('載入貼文失敗:', error)
+    ElMessage.error(error.response?.data?.message || t('common.error'))
+  }
 }
 
 const postForm = reactive({
@@ -209,37 +176,45 @@ const rules = {
 
 const handleCreatePost = async () => {
   if (!postFormRef.value) return
-  
-  await postFormRef.value.validate((valid) => {
-    if (valid) {
-      const newPost = {
-        id: Date.now(),
-        username: userStore.currentUser?.name || t('common.user'),
-        content: postForm.content,
-        category: postForm.category,
-        likes: 0,
-        comments: 0,
-        shares: 0,
-        isLiked: false,
-        isMine: true,
-        createdAt: new Date().toISOString()
-      }
-      
-      posts.value.unshift(newPost)
-      savePosts()
-      ElMessage.success(t('community.publishSuccess'))
-      showPostDialog.value = false
-      resetForm()
-    }
-  })
+
+  const valid = await postFormRef.value.validate().catch(() => false)
+  if (!valid) return
+
+  try {
+    const response = await axios.post(`${API_BASE_URL}/api/community-posts`, {
+      userId: userStore.userId,
+      username: userStore.currentUser?.name || t('common.user'),
+      content: postForm.content,
+      category: postForm.category
+    })
+
+    posts.value.unshift({ ...response.data.post, isMine: true })
+    ElMessage.success(t('community.publishSuccess'))
+    showPostDialog.value = false
+    resetForm()
+  } catch (error) {
+    console.error('發布貼文失敗:', error)
+    ElMessage.error(error.response?.data?.message || t('common.error'))
+  }
 }
 
-const toggleLike = (id) => {
-  const post = posts.value.find(p => p.id === id)
-  if (post) {
-    post.isLiked = !post.isLiked
-    post.likes = post.isLiked ? (post.likes || 0) + 1 : (post.likes || 0) - 1
-    savePosts()
+const toggleLike = async (id) => {
+  try {
+    const response = await axios.put(`${API_BASE_URL}/api/community-posts/${id}/like`, {
+      userId: userStore.userId
+    })
+
+    const index = posts.value.findIndex(p => p.id === id)
+    if (index !== -1) {
+      posts.value[index] = {
+        ...posts.value[index],
+        ...response.data.post,
+        isMine: posts.value[index].isMine
+      }
+    }
+  } catch (error) {
+    console.error('按讚失敗:', error)
+    ElMessage.error(error.response?.data?.message || t('common.error'))
   }
 }
 
@@ -253,8 +228,10 @@ const deletePost = async (id) => {
         cancelButtonText: t('common.cancel'),
       type: 'warning'
     })
+    await axios.delete(`${API_BASE_URL}/api/community-posts/${id}`, {
+      params: { userId: userStore.userId }
+    })
     posts.value = posts.value.filter(p => p.id !== id)
-    savePosts()
     ElMessage.success(t('community.deleteSuccess'))
   } catch {
     // User cancelled
@@ -295,6 +272,10 @@ const getCategoryName = (category) => {
   }
   return t(categoryMap[category] || category)
 }
+
+onMounted(() => {
+  loadPosts()
+})
 </script>
 
 <style scoped>

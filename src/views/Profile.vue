@@ -345,7 +345,7 @@
 </template>
 
 <script setup>
-import { ref, reactive, computed } from 'vue'
+import { ref, reactive, computed, onMounted } from 'vue'
 import { useProfileStore } from '@/stores/profile'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { useI18n } from 'vue-i18n'
@@ -444,29 +444,38 @@ const getDayClass = (dateStr) => {
 
 const handleSaveProfile = async () => {
   if (!profileFormRef.value) return
-  
-  await profileFormRef.value.validate((valid) => {
-    if (valid) {
-      profileStore.updateProfile({
-        ...profileForm,
-        targetDate: profileForm.targetDate ? profileForm.targetDate.toISOString() : null
-      })
-      ElMessage.success(t('profile.saveSuccess'))
-      showEditDialog.value = false
-    }
+
+  const valid = await profileFormRef.value.validate().catch(() => false)
+  if (!valid) return
+
+  const result = await profileStore.updateProfile({
+    ...profileForm,
+    targetDate: profileForm.targetDate ? profileForm.targetDate.toISOString() : null
   })
+
+  if (result.success) {
+    ElMessage.success(t('profile.saveSuccess'))
+    showEditDialog.value = false
+    return
+  }
+
+  ElMessage.error(result.message || t('common.error'))
 }
 
 const handleAddWeight = async () => {
   if (!weightFormRef.value) return
-  
-  await weightFormRef.value.validate((valid) => {
-    if (valid) {
-      profileStore.addWeightEntry(weightForm.weight)
-      ElMessage.success(t('profile.weightRecorded'))
-      showWeightDialog.value = false
-    }
-  })
+
+  const valid = await weightFormRef.value.validate().catch(() => false)
+  if (!valid) return
+
+  const result = await profileStore.addWeightEntry(weightForm.weight)
+  if (result.success) {
+    ElMessage.success(t('profile.weightRecorded'))
+    showWeightDialog.value = false
+    return
+  }
+
+  ElMessage.error(result.message || t('common.error'))
 }
 
 const handleDeleteWeight = async (id) => {
@@ -480,8 +489,13 @@ const handleDeleteWeight = async (id) => {
         type: 'warning'
       }
     )
-    profileStore.deleteWeightEntry(id)
-    ElMessage.success(t('profile.deleteSuccess'))
+    const result = await profileStore.deleteWeightEntry(id)
+    if (result.success) {
+      ElMessage.success(t('profile.deleteSuccess'))
+      return
+    }
+
+    ElMessage.error(result.message || t('common.error'))
   } catch {
     // User cancelled
   }
@@ -524,6 +538,20 @@ const formatDateTime = (date) => {
     minute: '2-digit'
   })
 }
+
+onMounted(async () => {
+  await profileStore.loadProfile()
+
+  profileForm.age = profileStore.profile.age || null
+  profileForm.gender = profileStore.profile.gender || ''
+  profileForm.height = profileStore.profile.height || null
+  profileForm.weight = profileStore.profile.weight || null
+  profileForm.targetWeight = profileStore.profile.targetWeight || null
+  profileForm.targetDate = profileStore.profile.targetDate ? new Date(profileStore.profile.targetDate) : null
+  profileForm.goal = profileStore.profile.goal || ''
+  profileForm.dailyCalorieGoal = profileStore.profile.dailyCalorieGoal || 2000
+  weightForm.weight = profileStore.profile.weight || null
+})
 </script>
 
 <style scoped>

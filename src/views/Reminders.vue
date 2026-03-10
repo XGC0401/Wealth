@@ -140,7 +140,7 @@
 </template>
 
 <script setup>
-import { ref, reactive } from 'vue'
+import { ref, reactive, onMounted } from 'vue'
 import { useRemindersStore } from '@/stores/reminders'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { 
@@ -204,26 +204,33 @@ const getReminderFrequency = (frequency) => {
 
 const handleAddReminder = async () => {
   if (!reminderFormRef.value) return
-  
-  await reminderFormRef.value.validate((valid) => {
-    if (valid) {
-      const time = reminderForm.time
-      const timeString = `${time.getHours().toString().padStart(2, '0')}:${time.getMinutes().toString().padStart(2, '0')}`
-      
-      remindersStore.addReminder({
-        ...reminderForm,
-        time: timeString
-      })
-      
-      ElMessage.success(t('reminders.addSuccess'))
-      showAddDialog.value = false
-      resetForm()
-    }
+
+  const valid = await reminderFormRef.value.validate().catch(() => false)
+  if (!valid) return
+
+  const time = reminderForm.time
+  const timeString = `${time.getHours().toString().padStart(2, '0')}:${time.getMinutes().toString().padStart(2, '0')}`
+
+  const result = await remindersStore.addReminder({
+    ...reminderForm,
+    time: timeString
   })
+
+  if (result.success) {
+    ElMessage.success(t('reminders.addSuccess'))
+    showAddDialog.value = false
+    resetForm()
+    return
+  }
+
+  ElMessage.error(result.message || t('common.error'))
 }
 
-const handleToggle = (id) => {
-  remindersStore.toggleReminder(id)
+const handleToggle = async (id) => {
+  const result = await remindersStore.toggleReminder(id)
+  if (!result.success) {
+    ElMessage.error(result.message || t('common.error'))
+  }
 }
 
 const handleDelete = async (id) => {
@@ -237,8 +244,13 @@ const handleDelete = async (id) => {
         type: 'warning'
       }
     )
-    remindersStore.deleteReminder(id)
-    ElMessage.success(t('reminders.deleteSuccess'))
+    const result = await remindersStore.deleteReminder(id)
+    if (result.success) {
+      ElMessage.success(t('reminders.deleteSuccess'))
+      return
+    }
+
+    ElMessage.error(result.message || t('common.error'))
   } catch {
     // User cancelled
   }
@@ -255,6 +267,10 @@ const resetForm = () => {
   })
   reminderFormRef.value?.resetFields()
 }
+
+onMounted(() => {
+  remindersStore.loadReminders()
+})
 </script>
 
 <style scoped>

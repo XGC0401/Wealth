@@ -3,6 +3,8 @@ import { useUserStore } from './user'
 import { useRemindersStore } from './reminders'
 import axios from 'axios'
 
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000'
+
 // Helper function to calculate distance between two coordinates (Haversine formula)
 function calculateDistance(lat1, lon1, lat2, lon2) {
   const R = 6371 // Radius of the Earth in km
@@ -67,63 +69,104 @@ export const useBookingStore = defineStore('booking', {
       this.userLocation = location
     },
     
-    loadBookings() {
+    async loadBookings() {
       const userStore = useUserStore()
       if (userStore.userId) {
-        const key = `bookings_${userStore.userId}`
-        this.bookings = JSON.parse(localStorage.getItem(key)) || []
+        try {
+          const response = await axios.get(`${API_BASE_URL}/api/bookings/${userStore.userId}`)
+          this.bookings = response.data || []
+        } catch (error) {
+          console.error('載入預約失敗:', error)
+          this.bookings = []
+        }
       }
     },
 
-    createBooking(booking) {
+    async createBooking(booking) {
       const userStore = useUserStore()
       const remindersStore = useRemindersStore()
-      
-      const newBooking = {
-        id: Date.now(),
-        userId: userStore.userId,
-        ...booking,
-        status: 'confirmed',
-        createdAt: new Date().toISOString()
-      }
-      
-      this.bookings.push(newBooking)
-      this.saveToStorage()
 
-      // Create a reminder for the booking
-      const hospital = this.getHospitalById(booking.hospitalId)
-      if (hospital) {
-        remindersStore.addReminder({
-          title: `${hospital.name}`,
-          description: `${booking.department}\n${booking.date}\n${booking.time}\n${hospital.address}`,
-          time: `${booking.date} ${booking.time}`,
-          type: 'appointment',
-          active: true
+      if (!userStore.userId) {
+        return { success: false, message: '使用者未登入' }
+      }
+
+      try {
+        const response = await axios.post(`${API_BASE_URL}/api/bookings`, {
+          userId: userStore.userId,
+          hospitalId: booking.hospitalId,
+          hospitalName: booking.hospitalName,
+          department: booking.department,
+          date: booking.date,
+          time: booking.time,
+          patientName: booking.patientName,
+          phone: booking.phone,
+          notes: booking.notes || ''
         })
-      }
 
-      return newBooking
+        const newBooking = response.data.booking
+        this.bookings.unshift(newBooking)
+
+        const hospital = this.getHospitalById(booking.hospitalId)
+        if (hospital) {
+          await remindersStore.addReminder({
+            title: `${hospital.name}`,
+            description: `${booking.department}\n${booking.date}\n${booking.time}\n${hospital.address}`,
+            time: booking.time,
+            type: 'appointment',
+            active: true
+          })
+        }
+
+        return { success: true, booking: newBooking }
+      } catch (error) {
+        console.error('建立預約失敗:', error)
+        return { success: false, message: error.response?.data?.message || '建立預約失敗' }
+      }
     },
 
-    cancelBooking(bookingId) {
-      const booking = this.bookings.find(b => b.id === bookingId)
-      if (booking) {
-        booking.status = 'cancelled'
-        this.saveToStorage()
+    async cancelBooking(bookingId) {
+      const userStore = useUserStore()
+      if (!userStore.userId) {
+        return { success: false, message: '使用者未登入' }
+      }
+
+      try {
+        const response = await axios.put(`${API_BASE_URL}/api/bookings/${bookingId}/cancel`, {
+          userId: userStore.userId
+        })
+
+        const index = this.bookings.findIndex(b => b.id === bookingId)
+        if (index !== -1) {
+          this.bookings[index] = response.data.booking
+        }
+        return { success: true }
+      } catch (error) {
+        console.error('取消預約失敗:', error)
+        return { success: false, message: error.response?.data?.message || '取消失敗' }
       }
     },
 
-    deleteBooking(bookingId) {
-      this.bookings = this.bookings.filter(b => b.id !== bookingId)
-      this.saveToStorage()
+    async deleteBooking(bookingId) {
+      const userStore = useUserStore()
+      if (!userStore.userId) {
+        return { success: false, message: '使用者未登入' }
+      }
+
+      try {
+        await axios.delete(`${API_BASE_URL}/api/bookings/${bookingId}`, {
+          params: { userId: userStore.userId }
+        })
+
+        this.bookings = this.bookings.filter(b => b.id !== bookingId)
+        return { success: true }
+      } catch (error) {
+        console.error('刪除預約失敗:', error)
+        return { success: false, message: error.response?.data?.message || '刪除失敗' }
+      }
     },
 
     saveToStorage() {
-      const userStore = useUserStore()
-      if (userStore.userId) {
-        const key = `bookings_${userStore.userId}`
-        localStorage.setItem(key, JSON.stringify(this.bookings))
-      }
+      return
     },
 
     async fetchHospitalsFromAPI() {

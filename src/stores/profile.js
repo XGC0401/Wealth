@@ -1,5 +1,8 @@
 import { defineStore } from 'pinia'
 import { useUserStore } from './user'
+import axios from 'axios'
+
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000'
 
 export const useProfileStore = defineStore('profile', {
   state: () => ({
@@ -60,58 +63,87 @@ export const useProfileStore = defineStore('profile', {
   },
 
   actions: {
-    loadProfile() {
+    async loadProfile() {
       const userStore = useUserStore()
       if (userStore.userId) {
-        const profileKey = `userProfile_${userStore.userId}`
-        const historyKey = `weightHistory_${userStore.userId}`
-        const savedProfile = localStorage.getItem(profileKey)
-        const savedHistory = localStorage.getItem(historyKey)
-        
-        if (savedProfile) {
-          this.profile = JSON.parse(savedProfile)
+        try {
+          const response = await axios.get(`${API_BASE_URL}/api/profile/${userStore.userId}`)
+          if (response.data.profile) {
+            this.profile = {
+              ...this.profile,
+              ...response.data.profile
+            }
+          }
+          this.weightHistory = response.data.weightHistory || []
+        } catch (error) {
+          console.error('載入個人資料失敗:', error)
         }
-        if (savedHistory) {
-          this.weightHistory = JSON.parse(savedHistory)
+      }
+    },
+
+    async updateProfile(profileData) {
+      const userStore = useUserStore()
+      if (!userStore.userId) {
+        return { success: false, message: '使用者未登入' }
+      }
+
+      try {
+        const payload = { ...this.profile, ...profileData }
+        const response = await axios.put(`${API_BASE_URL}/api/profile/${userStore.userId}`, payload)
+        this.profile = {
+          ...this.profile,
+          ...response.data.profile
         }
+        return { success: true }
+      } catch (error) {
+        console.error('更新個人資料失敗:', error)
+        return { success: false, message: error.response?.data?.message || '更新失敗' }
       }
     },
 
-    updateProfile(profileData) {
-      this.profile = { ...this.profile, ...profileData }
-      this.saveToStorage()
+    async addWeightEntry(weight) {
+      const userStore = useUserStore()
+      if (!userStore.userId) {
+        return { success: false, message: '使用者未登入' }
+      }
+
+      try {
+        const response = await axios.post(`${API_BASE_URL}/api/profile/${userStore.userId}/weight-history`, {
+          weight
+        })
+
+        this.weightHistory.unshift(response.data.entry)
+        this.profile.weight = weight
+
+        if (this.weightHistory.length > 30) {
+          this.weightHistory = this.weightHistory.slice(0, 30)
+        }
+
+        return { success: true }
+      } catch (error) {
+        console.error('新增體重紀錄失敗:', error)
+        return { success: false, message: error.response?.data?.message || '新增失敗' }
+      }
     },
 
-    addWeightEntry(weight) {
-      const entry = {
-        id: Date.now(),
-        weight: weight,
-        date: new Date().toISOString()
+    async deleteWeightEntry(id) {
+      const userStore = useUserStore()
+      if (!userStore.userId) {
+        return { success: false, message: '使用者未登入' }
       }
-      this.weightHistory.unshift(entry)
-      this.profile.weight = weight
-      
-      // Keep only last 30 entries
-      if (this.weightHistory.length > 30) {
-        this.weightHistory = this.weightHistory.slice(0, 30)
-      }
-      
-      this.saveToStorage()
-    },
 
-    deleteWeightEntry(id) {
-      this.weightHistory = this.weightHistory.filter(w => w.id !== id)
-      this.saveToStorage()
+      try {
+        await axios.delete(`${API_BASE_URL}/api/profile/${userStore.userId}/weight-history/${id}`)
+        this.weightHistory = this.weightHistory.filter(w => w.id !== id)
+        return { success: true }
+      } catch (error) {
+        console.error('刪除體重紀錄失敗:', error)
+        return { success: false, message: error.response?.data?.message || '刪除失敗' }
+      }
     },
 
     saveToStorage() {
-      const userStore = useUserStore()
-      if (userStore.userId) {
-        const profileKey = `userProfile_${userStore.userId}`
-        const historyKey = `weightHistory_${userStore.userId}`
-        localStorage.setItem(profileKey, JSON.stringify(this.profile))
-        localStorage.setItem(historyKey, JSON.stringify(this.weightHistory))
-      }
+      return
     },
 
     clearData() {

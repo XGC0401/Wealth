@@ -127,19 +127,13 @@
             <span>{{ $t('home.mentalHealth') }}</span>
           </div>
         </el-col>
-        <el-col :xs="12" :sm="6">
-          <div class="quick-action" @click="$router.push('/random-generator')">
-            <el-icon :size="30" color="#f56c6c"><Dice /></el-icon>
-            <span>{{ $t('home.randomRecommend') }}</span>
-          </div>
-        </el-col>
       </el-row>
     </el-card>
   </div>
 </template>
 
 <script setup>
-import { computed } from 'vue'
+import { computed, onMounted } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useUserStore } from '@/stores/user'
 import { useActivitiesStore } from '@/stores/activities'
@@ -186,6 +180,10 @@ const formatDate = (date) => {
   
   return d.toLocaleDateString('zh-TW')
 }
+
+onMounted(() => {
+  activitiesStore.loadActivities()
+})
 </script>
 
 <style scoped>

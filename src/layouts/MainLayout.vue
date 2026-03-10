@@ -85,11 +85,6 @@
               <span>{{ $t('nav.community') }}</span>
             </el-menu-item>
             
-            <el-menu-item index="/random-generator">
-              <el-icon><MagicStick /></el-icon>
-              <span>{{ $t('nav.randomGenerator') }}</span>
-            </el-menu-item>
-            
             <el-menu-item index="/booking">
               <el-icon><Calendar /></el-icon>
               <span>{{ $t('nav.booking') }}</span>

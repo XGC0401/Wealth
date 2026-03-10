@@ -57,11 +57,6 @@ const router = createRouter({
           component: () => import('@/views/Community.vue')
         },
         {
-          path: 'random-generator',
-          name: 'RandomGenerator',
-          component: () => import('@/views/RandomGenerator.vue')
-        },
-        {
           path: 'booking',
           name: 'Booking',
           component: () => import('@/views/Booking.vue'),

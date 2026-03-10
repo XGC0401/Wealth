@@ -128,7 +128,7 @@
 </template>
 
 <script setup>
-import { ref, reactive, computed } from 'vue'
+import { ref, reactive, computed, onMounted } from 'vue'
 import { useActivitiesStore } from '@/stores/activities'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { Plus, Delete } from '@element-plus/icons-vue'
@@ -163,15 +163,19 @@ const paginatedActivities = computed(() => {
 
 const handleAddActivity = async () => {
   if (!activityFormRef.value) return
-  
-  await activityFormRef.value.validate((valid) => {
-    if (valid) {
-      activitiesStore.addActivity({ ...activityForm })
-      ElMessage.success(t('activities.addSuccess'))
-      showAddDialog.value = false
-      resetForm()
-    }
-  })
+
+  const valid = await activityFormRef.value.validate().catch(() => false)
+  if (!valid) return
+
+  const result = await activitiesStore.addActivity({ ...activityForm })
+  if (result.success) {
+    ElMessage.success(t('activities.addSuccess'))
+    showAddDialog.value = false
+    resetForm()
+    return
+  }
+
+  ElMessage.error(result.message || t('common.error'))
 }
 
 const handleDelete = async (id) => {
@@ -185,8 +189,13 @@ const handleDelete = async (id) => {
         type: 'warning'
       }
     )
-    activitiesStore.deleteActivity(id)
-    ElMessage.success(t('activities.deleteSuccess'))
+    const result = await activitiesStore.deleteActivity(id)
+    if (result.success) {
+      ElMessage.success(t('activities.deleteSuccess'))
+      return
+    }
+
+    ElMessage.error(result.message || t('common.error'))
   } catch {
     // User cancelled
   }
@@ -216,6 +225,10 @@ const formatDate = (date) => {
     minute: '2-digit'
   })
 }
+
+onMounted(() => {
+  activitiesStore.loadActivities()
+})
 </script>
 
 <style scoped>

@@ -3,10 +3,28 @@ import axios from 'axios'
 
 const API_URL = '/api'
 
+const getStoredUser = () => {
+  try {
+    const rawUser = sessionStorage.getItem('user')
+    return rawUser ? JSON.parse(rawUser) : null
+  } catch {
+    return null
+  }
+}
+
+const getStoredToken = () => sessionStorage.getItem('token') || null
+
+const clearLegacyAuthStorage = () => {
+  localStorage.removeItem('user')
+  localStorage.removeItem('token')
+}
+
+clearLegacyAuthStorage()
+
 export const useUserStore = defineStore('user', {
   state: () => ({
-    user: JSON.parse(localStorage.getItem('user')) || null,
-    token: localStorage.getItem('token') || null
+    user: getStoredUser(),
+    token: getStoredToken()
   }),
 
   getters: {
@@ -27,8 +45,9 @@ export const useUserStore = defineStore('user', {
           this.user = response.data.user
           this.token = response.data.token
           
-          localStorage.setItem('user', JSON.stringify(response.data.user))
-          localStorage.setItem('token', response.data.token)
+          sessionStorage.setItem('user', JSON.stringify(response.data.user))
+          sessionStorage.setItem('token', response.data.token)
+          clearLegacyAuthStorage()
           
           return { success: true }
         }
@@ -55,8 +74,9 @@ export const useUserStore = defineStore('user', {
           this.user = response.data.user
           this.token = response.data.token
           
-          localStorage.setItem('user', JSON.stringify(response.data.user))
-          localStorage.setItem('token', response.data.token)
+          sessionStorage.setItem('user', JSON.stringify(response.data.user))
+          sessionStorage.setItem('token', response.data.token)
+          clearLegacyAuthStorage()
           
           return { success: true }
         }
@@ -83,8 +103,9 @@ export const useUserStore = defineStore('user', {
       // Clear user data
       this.user = null
       this.token = null
-      localStorage.removeItem('user')
-      localStorage.removeItem('token')
+      sessionStorage.removeItem('user')
+      sessionStorage.removeItem('token')
+      clearLegacyAuthStorage()
       
       // Clear all stores
       try {
@@ -118,7 +139,8 @@ export const useUserStore = defineStore('user', {
         if (response.data.success) {
           // Update local user data
           this.user = response.data.user
-          localStorage.setItem('user', JSON.stringify(response.data.user))
+          sessionStorage.setItem('user', JSON.stringify(response.data.user))
+          clearLegacyAuthStorage()
           
           return { success: true, message: response.data.message }
         }

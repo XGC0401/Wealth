@@ -119,6 +119,7 @@
             v-model="planForm.targetDate"
             type="date"
             :placeholder="$t('wellnessPlans.selectTargetDate')"
+            :disabled-date="disableTargetDate"
             style="width: 100%"
           />
         </el-form-item>
@@ -158,16 +159,32 @@
 </template>
 
 <script setup>
-import { ref, reactive } from 'vue'
+import { ref, reactive, onMounted, watch } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { Plus, Delete, Calendar, Flag, MoreFilled } from '@element-plus/icons-vue'
 import { useI18n } from 'vue-i18n'
+import { useUserStore } from '@/stores/user'
+import axios from 'axios'
+
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000'
 
 const { t } = useI18n()
+const userStore = useUserStore()
 const showCreateDialog = ref(false)
 const planFormRef = ref(null)
 
-const plans = ref(JSON.parse(localStorage.getItem('wellnessPlans') || '[]'))
+const plans = ref([])
+
+const loadPlans = async () => {
+  if (!userStore.userId) return
+  try {
+    const response = await axios.get(`${API_BASE_URL}/api/wellness-plans/${userStore.userId}`)
+    plans.value = response.data || []
+  } catch (error) {
+    console.error('載入健康計畫失敗:', error)
+    ElMessage.error(error.response?.data?.message || t('common.error'))
+  }
+}
 
 const planForm = reactive({
   title: '',
@@ -177,11 +194,41 @@ const planForm = reactive({
   goals: ['']
 })
 
+const normalizeDate = (date) => {
+  const normalized = new Date(date)
+  normalized.setHours(0, 0, 0, 0)
+  return normalized
+}
+
+const disableTargetDate = (date) => {
+  if (!planForm.startDate) return false
+  return normalizeDate(date).getTime() < normalizeDate(planForm.startDate).getTime()
+}
+
+const validateTargetDate = (_rule, value, callback) => {
+  if (!value || !planForm.startDate) {
+    callback()
+    return
+  }
+
+  const startDate = normalizeDate(planForm.startDate).getTime()
+  const targetDate = normalizeDate(value).getTime()
+  if (targetDate < startDate) {
+    callback(new Error(t('wellnessPlans.targetDateInvalid')))
+    return
+  }
+
+  callback()
+}
+
 const rules = {
   title: [{ required: true, message: t('wellnessPlans.titleRequired'), trigger: 'blur' }],
   description: [{ required: true, message: t('wellnessPlans.descriptionRequired'), trigger: 'blur' }],
   startDate: [{ required: true, message: t('wellnessPlans.startDateRequired'), trigger: 'change' }],
-  targetDate: [{ required: true, message: t('wellnessPlans.targetDateRequired'), trigger: 'change' }]
+  targetDate: [
+    { required: true, message: t('wellnessPlans.targetDateRequired'), trigger: 'change' },
+    { validator: validateTargetDate, trigger: 'change' }
+  ]
 }
 
 const addGoal = () => {
@@ -194,38 +241,59 @@ const removeGoal = (index) => {
 
 const handleCreatePlan = async () => {
   if (!planFormRef.value) return
-  
-  await planFormRef.value.validate((valid) => {
-    if (valid) {
-      const newPlan = {
-        id: Date.now(),
-        ...planForm,
-        goals: planForm.goals.filter(g => g.trim() !== ''),
-        active: true,
-        progress: 0,
-        createdAt: new Date().toISOString()
-      }
-      
-      plans.value.unshift(newPlan)
-      savePlans()
-      ElMessage.success(t('wellnessPlans.createSuccess'))
-      showCreateDialog.value = false
-      resetForm()
-    }
-  })
+
+  const valid = await planFormRef.value.validate().catch(() => false)
+  if (!valid) return
+
+  if (normalizeDate(planForm.targetDate).getTime() < normalizeDate(planForm.startDate).getTime()) {
+    ElMessage.error(t('wellnessPlans.targetDateInvalid'))
+    return
+  }
+
+  try {
+    const response = await axios.post(`${API_BASE_URL}/api/wellness-plans`, {
+      userId: userStore.userId,
+      title: planForm.title,
+      description: planForm.description,
+      startDate: planForm.startDate,
+      targetDate: planForm.targetDate,
+      goals: planForm.goals.filter(g => g.trim() !== ''),
+      progress: 0,
+      active: true
+    })
+
+    plans.value.unshift(response.data.plan)
+    ElMessage.success(t('wellnessPlans.createSuccess'))
+    showCreateDialog.value = false
+    resetForm()
+  } catch (error) {
+    console.error('新增健康計畫失敗:', error)
+    ElMessage.error(error.response?.data?.message || t('common.error'))
+  }
 }
 
-const togglePlanStatus = (id) => {
+const togglePlanStatus = async (id) => {
   const plan = plans.value.find(p => p.id === id)
-  if (plan) {
-    plan.active = !plan.active
-    if (!plan.active) {
-      plan.progress = 100
-    } else {
-      plan.progress = 0
+  if (!plan) return
+
+  try {
+    const nextActive = !plan.active
+    const nextProgress = nextActive ? 0 : 100
+    const response = await axios.put(`${API_BASE_URL}/api/wellness-plans/${id}/status`, {
+      userId: userStore.userId,
+      active: nextActive,
+      progress: nextProgress
+    })
+
+    const index = plans.value.findIndex(p => p.id === id)
+    if (index !== -1) {
+      plans.value[index] = response.data.plan
     }
-    savePlans()
-    ElMessage.success(plan.active ? t('wellnessPlans.reactivated') : t('wellnessPlans.markedComplete'))
+
+    ElMessage.success(nextActive ? t('wellnessPlans.reactivated') : t('wellnessPlans.markedComplete'))
+  } catch (error) {
+    console.error('更新健康計畫狀態失敗:', error)
+    ElMessage.error(error.response?.data?.message || t('common.error'))
   }
 }
 
@@ -240,16 +308,14 @@ const deletePlan = async (id) => {
         type: 'warning'
       }
     )
+    await axios.delete(`${API_BASE_URL}/api/wellness-plans/${id}`, {
+      params: { userId: userStore.userId }
+    })
     plans.value = plans.value.filter(p => p.id !== id)
-    savePlans()
     ElMessage.success(t('wellnessPlans.deleteSuccess'))
   } catch {
     // User cancelled
   }
-}
-
-const savePlans = () => {
-  localStorage.setItem('wellnessPlans', JSON.stringify(plans.value))
 }
 
 const resetForm = () => {
@@ -272,6 +338,20 @@ const getProgressColor = (progress) => {
   if (progress < 70) return '#e6a23c'
   return '#67c23a'
 }
+
+watch(
+  () => planForm.startDate,
+  () => {
+    if (!planForm.startDate || !planForm.targetDate) return
+    if (normalizeDate(planForm.targetDate).getTime() < normalizeDate(planForm.startDate).getTime()) {
+      planForm.targetDate = null
+    }
+  }
+)
+
+onMounted(() => {
+  loadPlans()
+})
 </script>
 
 <style scoped>
