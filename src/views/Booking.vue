@@ -48,22 +48,22 @@
         <div class="filter-section">
           <span class="filter-label">{{ $t('booking.filterType') }}</span>
           <el-radio-group v-model="typeFilter" size="default" style="margin-right: 30px;">
-            <el-radio-button label="all">{{ $t('booking.all') }}</el-radio-button>
-            <el-radio-button label="hospital">{{ $t('booking.hospital') }}</el-radio-button>
-            <el-radio-button label="clinic">{{ $t('booking.clinic') }}</el-radio-button>
+            <el-radio-button value="all">{{ $t('booking.all') }}</el-radio-button>
+            <el-radio-button value="hospital">{{ $t('booking.hospital') }}</el-radio-button>
+            <el-radio-button value="clinic">{{ $t('booking.clinic') }}</el-radio-button>
           </el-radio-group>
           
           <span class="filter-label">{{ $t('booking.sortBy') }}</span>
           <el-radio-group v-model="sortBy" @change="handleSortChange">
-            <el-radio-button label="nearest">
+            <el-radio-button value="nearest">
               <el-icon><LocationFilled /></el-icon>
               {{ $t('booking.nearest') }}
             </el-radio-button>
-            <el-radio-button label="rating">
+            <el-radio-button value="rating">
               <el-icon><StarFilled /></el-icon>
               {{ $t('booking.highestRating') }}
             </el-radio-button>
-            <el-radio-button label="leastPeople">
+            <el-radio-button value="leastPeople">
               <el-icon><User /></el-icon>
               {{ $t('booking.leastPeople') }}
             </el-radio-button>
@@ -100,11 +100,11 @@
                 <h3 class="hospital-name">{{ hospital.name }}</h3>
                 <div class="info-row">
                   <el-icon><Location /></el-icon>
-                  <span>{{ hospital.address }}</span>
+                  <span>{{ formatAddress(hospital.address) }}</span>
                 </div>
                 <div class="info-row">
                   <el-icon><Phone /></el-icon>
-                  <span>{{ hospital.phone }}</span>
+                  <span>{{ formatPhone(hospital.phone) }}</span>
                 </div>
                 <div class="info-row">
                   <el-icon><Clock /></el-icon>
@@ -178,11 +178,11 @@
                 <h3 class="hospital-name">{{ hospital.name }}</h3>
                 <div class="info-row">
                   <el-icon><Location /></el-icon>
-                  <span>{{ hospital.address }}</span>
+                  <span>{{ formatAddress(hospital.address) }}</span>
                 </div>
                 <div class="info-row">
                   <el-icon><Phone /></el-icon>
-                  <span>{{ hospital.phone }}</span>
+                  <span>{{ formatPhone(hospital.phone) }}</span>
                 </div>
                 <div class="info-row">
                   <el-icon><Clock /></el-icon>
@@ -248,9 +248,9 @@
           <div style="margin-left: 20px; display: inline-block;">
             <span class="filter-label">{{ $t('booking.typeFilter') }}</span>
             <el-radio-group v-model="typeFilter" size="small">
-              <el-radio-button label="all">{{ $t('booking.all') }}</el-radio-button>
-              <el-radio-button label="hospital">{{ $t('booking.hospital') }}</el-radio-button>
-              <el-radio-button label="clinic">{{ $t('booking.clinic') }}</el-radio-button>
+              <el-radio-button value="all">{{ $t('booking.all') }}</el-radio-button>
+              <el-radio-button value="hospital">{{ $t('booking.hospital') }}</el-radio-button>
+              <el-radio-button value="clinic">{{ $t('booking.clinic') }}</el-radio-button>
             </el-radio-group>
           </div>
           
@@ -319,11 +319,11 @@
                     <h4>{{ hospital.name }}</h4>
                     <p>
                       <el-icon><Location /></el-icon>
-                      {{ hospital.address }}
+                      {{ formatAddress(hospital.address) }}
                     </p>
                     <p>
                       <el-icon><Phone /></el-icon>
-                      {{ hospital.phone }}
+                      {{ formatPhone(hospital.phone) }}
                     </p>
                     <p>
                       <el-icon><Clock /></el-icon>
@@ -406,16 +406,16 @@
                   </el-tag>
                 </el-descriptions-item>
                 <el-descriptions-item :label="$t('booking.address')">
-                  {{ selectedHospital.address }}
+                  {{ formatAddress(selectedHospital.address) }}
                 </el-descriptions-item>
                 <el-descriptions-item :label="$t('booking.phone')">
-                  {{ selectedHospital.phone }}
+                  {{ formatPhone(selectedHospital.phone) }}
                 </el-descriptions-item>
                 <el-descriptions-item :label="$t('booking.businessHours')">
                   {{ selectedHospital.openTime }} - {{ selectedHospital.closeTime }}
                 </el-descriptions-item>
                 <el-descriptions-item :label="$t('booking.workingDays')">
-                  {{ selectedHospital.workingDays.join('、') }}
+                  {{ selectedHospital.workingDays.map(translateWorkingDay).join('、') }}
                 </el-descriptions-item>
                 <el-descriptions-item :label="$t('booking.rating')">
                   <el-rate 
@@ -442,8 +442,14 @@
                     :key="dept"
                     class="dept-tag"
                   >
-                    {{ dept }}
+                    {{ translateDepartment(dept) }}
                   </el-tag>
+                </div>
+
+                <div class="dialog-book-action">
+                  <el-button type="primary" @click="goToBookingTab">
+                    {{ $t('booking.bookNow') }}
+                  </el-button>
                 </div>
               </div>
             </div>
@@ -465,7 +471,7 @@
                   <el-option
                     v-for="dept in selectedHospital.departments"
                     :key="dept"
-                    :label="dept"
+                    :label="translateDepartment(dept)"
                     :value="dept"
                   />
                 </el-select>
@@ -557,7 +563,7 @@
               <div class="booking-item">
                 <div class="booking-info">
                   <h4>{{ getHospitalName(booking.hospitalId) }}</h4>
-                  <p><strong>{{ $t('booking.departmentLabel') }}</strong>{{ booking.department }}</p>
+                  <p><strong>{{ $t('booking.departmentLabel') }}</strong>{{ translateDepartment(booking.department) }}</p>
                   <p><strong>{{ $t('booking.patientLabel') }}</strong>{{ booking.patientName }}</p>
                   <p><strong>{{ $t('booking.phoneLabel') }}</strong>{{ booking.phone }}</p>
                   <p v-if="booking.notes"><strong>{{ $t('booking.notesLabel') }}</strong>{{ booking.notes }}</p>
@@ -743,6 +749,51 @@ const availableTimeSlots = computed(() => {
   return slots
 })
 
+const weekdayKeyMap = {
+  Sun: 'booking.daySun',
+  Mon: 'booking.dayMon',
+  Tue: 'booking.dayTue',
+  Wed: 'booking.dayWed',
+  Thu: 'booking.dayThu',
+  Fri: 'booking.dayFri',
+  Sat: 'booking.daySat'
+}
+
+const departmentKeyMap = {
+  'Internal Medicine': 'booking.deptInternalMedicine',
+  Surgery: 'booking.deptSurgery',
+  Emergency: 'booking.deptEmergency',
+  Orthopedics: 'booking.deptOrthopedics',
+  Pediatrics: 'booking.deptPediatrics',
+  'Family Medicine': 'booking.deptFamilyMedicine',
+  Cardiology: 'booking.deptCardiology'
+}
+
+const translateWorkingDay = (day) => {
+  const shortDay = String(day).slice(0, 3)
+  const key = weekdayKeyMap[shortDay]
+  return key ? t(key) : day
+}
+
+const translateDepartment = (department) => {
+  const key = departmentKeyMap[department]
+  return key ? t(key) : department
+}
+
+const formatAddress = (address) => {
+  if (!address || address === 'Address not provided') {
+    return t('common.addressNotProvided')
+  }
+  return address
+}
+
+const formatPhone = (phone) => {
+  if (!phone || phone === 'Phone not provided') {
+    return t('common.phoneNotProvided')
+  }
+  return phone
+}
+
 // Methods
 const getUserLocation = () => {
   if (!navigator.geolocation) {
@@ -814,6 +865,10 @@ const openDetailDialog = (hospital) => {
   resetBookingForm()
 }
 
+const goToBookingTab = () => {
+  activeTab.value = 'booking'
+}
+
 const fitMapToMarkers = () => {
   if (map.value && map.value.leafletObject && bookingStore.hospitals.length > 0) {
     // Use setTimeout to ensure map is fully rendered
@@ -861,18 +916,17 @@ const disabledDate = (date) => {
   const maxDate = new Date()
   maxDate.setMonth(maxDate.getMonth() + 3)
   
-  // Check if it's a working day
+  // Check if it's a working day (store uses weekday codes like Mon/Tue)
   const dayOfWeek = date.getDay()
-  const dayNames = [
-    $t('common.sunday'),
-    $t('common.monday'),
-    $t('common.tuesday'),
-    $t('common.wednesday'),
-    $t('common.thursday'),
-    $t('common.friday'),
-    $t('common.saturday')
-  ]
-  const isWorkingDay = selectedHospital.value?.workingDays.includes(dayNames[dayOfWeek])
+  const dayCodes = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
+  const workingDays = selectedHospital.value?.workingDays
+
+  if (!Array.isArray(workingDays) || workingDays.length === 0) {
+    return date < today || date > maxDate
+  }
+
+  const normalizedWorkingDays = workingDays.map((day) => String(day).slice(0, 3))
+  const isWorkingDay = normalizedWorkingDays.includes(dayCodes[dayOfWeek])
   
   return date < today || date > maxDate || !isWorkingDay
 }
@@ -1326,6 +1380,12 @@ onUnmounted(() => {
 
 .dept-tag {
   cursor: pointer;
+}
+
+.dialog-book-action {
+  margin-top: 16px;
+  display: flex;
+  justify-content: center;
 }
 
 /* My Bookings */

@@ -13,6 +13,7 @@ export default {
     error: '錯誤',
     warning: '警告',
     info: '資訊',
+    seeMore: '查看更多',
     viewAll: '查看更多',
     operation: '操作',
     date: '日期',
@@ -30,7 +31,9 @@ export default {
     minutesAgo: '{n} 分鐘前',
     hoursAgo: '{n} 小時前',
     daysAgo: '{n} 天前',
-    chinese: '中文'
+    chinese: '中文',
+    addressNotProvided: '未提供地址',
+    phoneNotProvided: '未提供電話'
   },
   
   auth: {
@@ -224,7 +227,13 @@ export default {
     weightRecorded: '體重已記錄',
     deleteTitle: '確認刪除',
     deleteConfirm: '確定要刪除這筆體重記錄嗎？',
-    deleteSuccess: '已刪除'
+    deleteSuccess: '已刪除',
+    deleteGoalConfirm: '確定要刪除您的目標嗎？',
+    goalDeleted: '目標已刪除',
+    bmiUnderweight: '過輕',
+    bmiNormal: '正常',
+    bmiOverweight: '過重',
+    bmiObese: '肥胖'
   },
   
   settings: {
@@ -548,7 +557,21 @@ export default {
     cancelConfirmMessage: '確定要取消此預約嗎？',
     cancelledSuccess: '已取消預約',
     deleteConfirmMessage: '確定要刪除此預約記錄嗎？',
-    deletedSuccess: '已刪除記錄'
+    deletedSuccess: '已刪除記錄',
+    daySun: '星期日',
+    dayMon: '星期一',
+    dayTue: '星期二',
+    dayWed: '星期三',
+    dayThu: '星期四',
+    dayFri: '星期五',
+    daySat: '星期六',
+    deptInternalMedicine: '內科',
+    deptSurgery: '外科',
+    deptEmergency: '急診',
+    deptOrthopedics: '骨科',
+    deptPediatrics: '小兒科',
+    deptFamilyMedicine: '家庭醫學科',
+    deptCardiology: '心臟科'
   },
   
   app: {

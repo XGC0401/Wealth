@@ -2,7 +2,7 @@
   <div class="profile-page">
     <div class="page-header">
       <h1>{{ $t('profile.title') }}</h1>
-      <el-button type="primary" :icon="Edit" @click="showEditDialog = true">
+      <el-button type="primary" :icon="Edit" @click="openEditDialog">
         {{ $t('profile.editProfile') }}
       </el-button>
     </div>
@@ -107,10 +107,19 @@
               </div>
               <el-progress :percentage="goalProgress" :color="progressColor" />
             </div>
+
+            <div class="goal-actions">
+              <el-button type="primary" plain :icon="Edit" @click="handleEditGoal">
+                {{ $t('common.edit') }}
+              </el-button>
+              <el-button type="danger" plain :icon="Delete" @click="handleDeleteGoal">
+                {{ $t('common.delete') }}
+              </el-button>
+            </div>
           </div>
 
           <el-empty v-else :description="$t('profile.noGoal')" :image-size="120">
-            <el-button type="primary" @click="showEditDialog = true">
+            <el-button type="primary" @click="openEditDialog">
               {{ $t('profile.setGoal') }}
             </el-button>
           </el-empty>
@@ -233,8 +242,8 @@
 
         <el-form-item :label="$t('profile.gender')" prop="gender">
           <el-radio-group v-model="profileForm.gender">
-            <el-radio :label="$t('profile.male')">{{ $t('profile.male') }}</el-radio>
-            <el-radio :label="$t('profile.female')">{{ $t('profile.female') }}</el-radio>
+            <el-radio :value="$t('profile.male')">{{ $t('profile.male') }}</el-radio>
+            <el-radio :value="$t('profile.female')">{{ $t('profile.female') }}</el-radio>
           </el-radio-group>
         </el-form-item>
 
@@ -350,7 +359,7 @@ import { useProfileStore } from '@/stores/profile'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { useI18n } from 'vue-i18n'
 
-const { t } = useI18n()
+const { t, locale } = useI18n()
 import { 
   Edit, Plus, Delete, User, Flag, Calendar,
   TrendCharts, Rank, DataAnalysis
@@ -379,6 +388,22 @@ const profileForm = reactive({
 const weightForm = reactive({
   weight: profileStore.profile.weight || null
 })
+
+const syncProfileForm = () => {
+  profileForm.age = profileStore.profile.age || null
+  profileForm.gender = profileStore.profile.gender || ''
+  profileForm.height = profileStore.profile.height || null
+  profileForm.weight = profileStore.profile.weight || null
+  profileForm.targetWeight = profileStore.profile.targetWeight || null
+  profileForm.targetDate = profileStore.profile.targetDate ? new Date(profileStore.profile.targetDate) : null
+  profileForm.goal = profileStore.profile.goal || ''
+  profileForm.dailyCalorieGoal = profileStore.profile.dailyCalorieGoal || 2000
+}
+
+const openEditDialog = () => {
+  syncProfileForm()
+  showEditDialog.value = true
+}
 
 const profileRules = {
   age: [{ required: true, message: t('profile.ageRequired'), trigger: 'blur' }],
@@ -482,6 +507,34 @@ const handleDeleteWeight = async (id) => {
     )
     profileStore.deleteWeightEntry(id)
     ElMessage.success(t('profile.deleteSuccess'))
+  } catch {
+    // User cancelled
+  }
+}
+
+const handleEditGoal = () => {
+  openEditDialog()
+}
+
+const handleDeleteGoal = async () => {
+  try {
+    await ElMessageBox.confirm(
+      t('profile.deleteGoalConfirm'),
+      t('profile.deleteTitle'),
+      {
+        confirmButtonText: t('common.confirm'),
+        cancelButtonText: t('common.cancel'),
+        type: 'warning'
+      }
+    )
+
+    profileStore.updateProfile({
+      goal: '',
+      targetWeight: null,
+      targetDate: null
+    })
+    syncProfileForm()
+    ElMessage.success(t('profile.goalDeleted'))
   } catch {
     // User cancelled
   }
@@ -606,6 +659,12 @@ const formatDateTime = (date) => {
   padding: 10px;
   background: #f5f7fa;
   border-radius: 6px;
+}
+
+.goal-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
 }
 
 .goal-label {

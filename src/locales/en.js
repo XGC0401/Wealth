@@ -13,6 +13,7 @@ export default {
     error: 'Error',
     warning: 'Warning',
     info: 'Info',
+    seeMore: 'See More',
     viewAll: 'See More',
     operation: 'Operation',
     date: 'Date',
@@ -230,7 +231,13 @@ export default {
     weightRecorded: 'Weight recorded',
     deleteTitle: 'Confirm Delete',
     deleteConfirm: 'Are you sure you want to delete this weight record?',
-    deleteSuccess: 'Deleted'
+    deleteSuccess: 'Deleted',
+    deleteGoalConfirm: 'Are you sure you want to delete your target goal?',
+    goalDeleted: 'Target goal deleted',
+    bmiUnderweight: 'Underweight',
+    bmiNormal: 'Normal',
+    bmiOverweight: 'Overweight',
+    bmiObese: 'Obese'
   },
   
   settings: {
@@ -555,6 +562,21 @@ export default {
     cancelledSuccess: 'Booking cancelled',
     deleteConfirmMessage: 'Are you sure you want to delete this booking record?',
     deletedSuccess: 'Record deleted'
+    ,
+    daySun: 'Sunday',
+    dayMon: 'Monday',
+    dayTue: 'Tuesday',
+    dayWed: 'Wednesday',
+    dayThu: 'Thursday',
+    dayFri: 'Friday',
+    daySat: 'Saturday',
+    deptInternalMedicine: 'Internal Medicine',
+    deptSurgery: 'Surgery',
+    deptEmergency: 'Emergency',
+    deptOrthopedics: 'Orthopedics',
+    deptPediatrics: 'Pediatrics',
+    deptFamilyMedicine: 'Family Medicine',
+    deptCardiology: 'Cardiology'
   },
   
   app: {
