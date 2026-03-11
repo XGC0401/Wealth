@@ -390,7 +390,7 @@
     <el-dialog
       v-model="showDetailDialog"
       :title="selectedHospital?.name"
-      width="700px"
+      width="900px"
       :close-on-click-modal="false"
     >
       <div v-if="selectedHospital" class="detail-content">
@@ -460,7 +460,8 @@
               ref="bookingFormRef"
               :model="bookingForm" 
               :rules="bookingRules"
-              label-width="100px"
+              label-position="top"
+              class="booking-form"
             >
               <el-form-item :label="$t('booking.departmentLabel')" prop="department">
                 <el-select 
@@ -666,6 +667,29 @@ const bookingForm = reactive({
   notes: ''
 })
 
+const validatePhone = (_rule, value, callback) => {
+  const input = String(value || '').trim()
+  if (!input) {
+    callback(new Error(t('booking.phoneRequired')))
+    return
+  }
+
+  // Keep digits and leading + for validation only.
+  const normalized = input.replace(/[\s()-]/g, '')
+
+  // Accept HK (+852XXXXXXXX / 852XXXXXXXX / 8-digit local), TW mobile, and generic international length.
+  const isHongKong = /^(\+?852)?[235689]\d{7}$/.test(normalized)
+  const isTaiwanMobile = /^09\d{8}$/.test(normalized)
+  const isGenericInternational = /^\+?\d{7,15}$/.test(normalized)
+
+  if (isHongKong || isTaiwanMobile || isGenericInternational) {
+    callback()
+    return
+  }
+
+  callback(new Error(t('booking.phoneInvalid')))
+}
+
 const bookingRules = {
   department: [{ required: true, message: t('booking.departmentRequired'), trigger: 'change' }],
   date: [{ required: true, message: t('booking.dateRequired'), trigger: 'change' }],
@@ -673,7 +697,7 @@ const bookingRules = {
   patientName: [{ required: true, message: t('booking.patientNameRequired'), trigger: 'blur' }],
   phone: [
     { required: true, message: t('booking.phoneRequired'), trigger: 'blur' },
-    { pattern: /^09\d{8}$/, message: t('booking.phoneInvalid'), trigger: 'blur' }
+    { validator: validatePhone, trigger: 'blur' }
   ]
 }
 
@@ -1386,6 +1410,10 @@ onUnmounted(() => {
   margin-top: 16px;
   display: flex;
   justify-content: center;
+}
+
+.booking-form :deep(.el-form-item) {
+  margin-bottom: 18px;
 }
 
 /* My Bookings */

@@ -70,7 +70,8 @@
         ref="practiceFormRef"
         :model="practiceForm"
         :rules="rules"
-        label-width="100px"
+        label-position="top"
+        class="mental-health-form"
       >
         <el-form-item :label="$t('mentalHealth.practiceName')" prop="name">
           <el-input v-model="practiceForm.name" :placeholder="$t('mentalHealth.namePlaceholder')" />
@@ -306,6 +307,10 @@ const formatDate = (date) => {
   line-height: 1.6;
   margin-bottom: 15px;
   white-space: pre-wrap;
+}
+
+.mental-health-form :deep(.el-form-item) {
+  margin-bottom: 18px;
 }
 
 .delete-btn {

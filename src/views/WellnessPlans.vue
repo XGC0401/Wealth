@@ -90,7 +90,8 @@
         ref="planFormRef"
         :model="planForm"
         :rules="rules"
-        label-width="100px"
+        label-position="top"
+        class="wellness-plan-form"
       >
         <el-form-item :label="$t('wellnessPlans.planTitle')" prop="title">
           <el-input v-model="planForm.title" :placeholder="$t('wellnessPlans.titlePlaceholder')" />
@@ -385,6 +386,10 @@ const getProgressColor = (progress) => {
 
 .goal-input {
   width: 100%;
+}
+
+.wellness-plan-form :deep(.el-form-item) {
+  margin-bottom: 18px;
 }
 
 .add-goal-btn {

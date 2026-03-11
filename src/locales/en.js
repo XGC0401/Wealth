@@ -543,7 +543,7 @@ export default {
     timeRequired: 'Please select a booking time',
     patientNameRequired: 'Please enter patient name',
     phoneRequired: 'Please enter contact phone',
-    phoneInvalid: 'Please enter a valid mobile phone number',
+    phoneInvalid: 'Please enter a valid phone number',
     geolocationNotSupported: 'Your browser does not support geolocation',
     locationSuccessMessage: 'Successfully located your position',
     locationError: 'Unable to get your location, please confirm location permission is granted',

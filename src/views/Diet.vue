@@ -108,7 +108,8 @@
         ref="mealFormRef"
         :model="mealForm"
         :rules="rules"
-        label-width="100px"
+        label-position="top"
+        class="diet-form"
       >
         <el-form-item :label="$t('diet.mealName')" prop="name">
           <el-input v-model="mealForm.name" :placeholder="$t('diet.namePlaceholder')" />
@@ -332,6 +333,10 @@ const formatDate = (date) => {
 .summary-label {
   font-size: 14px;
   color: #909399;
+}
+
+.diet-form :deep(.el-form-item) {
+  margin-bottom: 18px;
 }
 
 .pagination {

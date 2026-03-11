@@ -44,8 +44,8 @@
           ref="formRef"
           :model="formData"
           :rules="rules"
-          label-width="120px"
-          label-position="left"
+          label-position="top"
+          class="settings-form"
         >
           <el-form-item :label="$t('auth.loginName')" prop="username">
             <el-input v-model="formData.username" :placeholder="$t('auth.loginNamePlaceholder')" />
@@ -322,6 +322,10 @@ onMounted(() => {
   font-size: 14px;
   color: #909399;
   margin: 0 0 16px 0;
+}
+
+.settings-form :deep(.el-form-item) {
+  margin-bottom: 18px;
 }
 
 .el-form {

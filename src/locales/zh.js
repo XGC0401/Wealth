@@ -539,7 +539,7 @@ export default {
     timeRequired: '請選擇預約時段',
     patientNameRequired: '請輸入就診人姓名',
     phoneRequired: '請輸入聯絡電話',
-    phoneInvalid: '請輸入正確的手機號碼',
+    phoneInvalid: '請輸入有效的電話號碼',
     geolocationNotSupported: '您的瀏覽器不支援地理位置功能',
     locationSuccessMessage: '已成功定位您的位置',
     locationError: '無法取得您的位置，請確認已允許位置存取權限',

@@ -70,7 +70,8 @@
         ref="reminderFormRef"
         :model="reminderForm"
         :rules="rules"
-        label-width="100px"
+        label-position="top"
+        class="reminders-form"
       >
         <el-form-item :label="$t('reminders.reminderTitle')" prop="title">
           <el-input v-model="reminderForm.title" :placeholder="$t('reminders.titlePlaceholder')" />
@@ -323,6 +324,10 @@ const resetForm = () => {
   gap: 8px;
   color: #909399;
   font-size: 14px;
+}
+
+.reminders-form :deep(.el-form-item) {
+  margin-bottom: 18px;
 }
 
 .delete-btn {

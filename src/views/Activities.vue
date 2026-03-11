@@ -76,7 +76,8 @@
         ref="activityFormRef"
         :model="activityForm"
         :rules="rules"
-        label-width="100px"
+        label-position="top"
+        class="activities-form"
       >
         <el-form-item :label="$t('activities.activityName')" prop="name">
           <el-input v-model="activityForm.name" :placeholder="$t('activities.namePlaceholder')" />
@@ -241,6 +242,10 @@ const formatDate = (date) => {
 .page-header h1 {
   font-size: 28px;
   color: #303133;
+}
+
+.activities-form :deep(.el-form-item) {
+  margin-bottom: 18px;
 }
 
 .pagination {

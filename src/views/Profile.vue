@@ -227,7 +227,8 @@
         ref="profileFormRef"
         :model="profileForm"
         :rules="profileRules"
-        label-width="120px"
+        label-position="top"
+        class="profile-form"
       >
         <el-divider content-position="left">{{ $t('profile.basicInfo') }}</el-divider>
 
@@ -329,7 +330,8 @@
         ref="weightFormRef"
         :model="weightForm"
         :rules="weightRules"
-        label-width="100px"
+        label-position="top"
+        class="weight-form"
       >
         <el-form-item :label="$t('profile.weightKg')" prop="weight">
           <el-input-number
@@ -720,6 +722,11 @@ const formatDateTime = (date) => {
 .target-marker, .today-marker {
   font-size: 16px;
   margin-top: 2px;
+}
+
+.profile-form :deep(.el-form-item),
+.weight-form :deep(.el-form-item) {
+  margin-bottom: 18px;
 }
 
 .pagination {

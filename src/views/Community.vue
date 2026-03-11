@@ -96,7 +96,8 @@
         ref="postFormRef"
         :model="postForm"
         :rules="rules"
-        label-width="80px"
+        label-position="top"
+        class="community-post-form"
       >
         <el-form-item :label="$t('community.content')" prop="content">
           <el-input
@@ -412,5 +413,9 @@ const getCategoryName = (category) => {
 .post-actions {
   display: flex;
   justify-content: space-around;
+}
+
+.community-post-form :deep(.el-form-item) {
+  margin-bottom: 18px;
 }
 </style>
