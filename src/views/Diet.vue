@@ -186,7 +186,7 @@ import { ElMessage, ElMessageBox } from 'element-plus'
 import { Plus, Delete } from '@element-plus/icons-vue'
 import { useI18n } from 'vue-i18n'
 
-const { t } = useI18n()
+const { t, locale } = useI18n()
 const dietStore = useDietStore()
 const showAddDialog = ref(false)
 const mealFormRef = ref(null)
