@@ -13,7 +13,7 @@ export default {
     error: 'Error',
     warning: 'Warning',
     info: 'Info',
-    viewAll: 'View All',
+    viewAll: 'See More',
     operation: 'Operation',
     date: 'Date',
     notes: 'Notes',
@@ -29,7 +29,14 @@ export default {
     justNow: 'Just now',
     minutesAgo: '{n} minutes ago',
     hoursAgo: '{n} hours ago',
-    daysAgo: '{n} days ago'
+    daysAgo: '{n} days ago',
+    chinese: 'Chinese',
+    addressNotProvided: 'Address not provided',
+    phoneNotProvided: 'Phone not provided',
+    logoutSuccess: 'Logged out successfully',
+    logoutError: 'Logout error',
+    loadHospitalSuccess: 'Successfully loaded {n} hospitals and clinics',
+    loadHospitalError: 'Unable to load hospital data: {error}',
   },
   
   auth: {

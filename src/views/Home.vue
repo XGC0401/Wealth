@@ -64,7 +64,7 @@
           <template #header>
             <div class="card-header">
               <span>{{ $t('home.recentActivities') }}</span>
-              <el-button text @click="$router.push('/activities')">{{ $t('common.viewAll') }}</el-button>
+              <el-button text @click="$router.push('/activities')">{{ $t('common.seeMore') }}</el-button>
             </div>
           </template>
           <div v-if="recentActivities.length > 0" class="activity-list">
@@ -86,7 +86,7 @@
           <template #header>
             <div class="card-header">
               <span>{{ $t('home.recentDiet') }}</span>
-              <el-button text @click="$router.push('/diet')">{{ $t('common.viewAll') }}</el-button>
+              <el-button text @click="$router.push('/diet')">{{ $t('common.seeMore') }}</el-button>
             </div>
           </template>
           <div v-if="recentMeals.length > 0" class="meal-list">
@@ -129,7 +129,7 @@
         </el-col>
         <el-col :xs="12" :sm="6">
           <div class="quick-action" @click="$router.push('/random-generator')">
-            <el-icon :size="30" color="#f56c6c"><Dice /></el-icon>
+            <el-icon :size="30" color="#f56c6c"><MagicStick /></el-icon>
             <span>{{ $t('home.randomRecommend') }}</span>
           </div>
         </el-col>
@@ -140,6 +140,7 @@
 
 <script setup>
 import { computed } from 'vue'
+import { MagicStick } from '@element-plus/icons-vue'
 import { useI18n } from 'vue-i18n'
 import { useUserStore } from '@/stores/user'
 import { useActivitiesStore } from '@/stores/activities'
@@ -147,7 +148,7 @@ import { useDietStore } from '@/stores/diet'
 import { useMentalHealthStore } from '@/stores/mentalHealth'
 import { useRemindersStore } from '@/stores/reminders'
 
-const { t } = useI18n()
+const { t, locale } = useI18n()
 const userStore = useUserStore()
 const activitiesStore = useActivitiesStore()
 const dietStore = useDietStore()
@@ -179,12 +180,10 @@ const formatDate = (date) => {
   const now = new Date()
   const diff = now - d
   const days = Math.floor(diff / (1000 * 60 * 60 * 24))
-  
   if (days === 0) return t('common.today')
   if (days === 1) return t('common.yesterday')
   if (days < 7) return `${days} ${t('profile.days')}`
-  
-  return d.toLocaleDateString('zh-TW')
+  return d.toLocaleDateString(locale.value === 'en' ? 'en-US' : 'zh-TW')
 }
 </script>
 

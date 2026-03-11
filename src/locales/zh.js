@@ -13,7 +13,7 @@ export default {
     error: '錯誤',
     warning: '警告',
     info: '資訊',
-    viewAll: '查看全部',
+    viewAll: '查看更多',
     operation: '操作',
     date: '日期',
     notes: '備註',
@@ -29,7 +29,8 @@ export default {
     justNow: '剛剛',
     minutesAgo: '{n} 分鐘前',
     hoursAgo: '{n} 小時前',
-    daysAgo: '{n} 天前'
+    daysAgo: '{n} 天前',
+    chinese: '中文'
   },
   
   auth: {

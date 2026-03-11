@@ -12,7 +12,11 @@
       <div v-if="activitiesStore.activities.length > 0">
         <el-table :data="paginatedActivities" stripe style="width: 100%">
           <el-table-column prop="name" :label="$t('activities.activityName')" min-width="150" />
-          <el-table-column prop="type" :label="$t('activities.activityType')" width="120" />
+          <el-table-column :label="$t('activities.activityType')" width="120">
+            <template #default="{ row }">
+              {{ $t('activities.' + row.type) }}
+            </template>
+          </el-table-column>
           <el-table-column :label="$t('activities.duration')" width="100">
             <template #default="{ row }">
               {{ row.duration }} {{ $t('common.minutes') }}
@@ -80,12 +84,12 @@
 
         <el-form-item :label="$t('activities.activityType')" prop="type">
           <el-select v-model="activityForm.type" :placeholder="$t('activities.typePlaceholder')" style="width: 100%">
-            <el-option :label="$t('activities.typeAerobic')" value="有氧運動" />
-            <el-option :label="$t('activities.typeStrength')" value="重量訓練" />
-            <el-option :label="$t('activities.typeYoga')" value="瑜珈" />
-            <el-option :label="$t('activities.typeFlexibility')" value="伸展運動" />
-            <el-option :label="$t('activities.typeSports')" value="球類運動" />
-            <el-option :label="$t('activities.typeOther')" value="其他" />
+            <el-option :label="$t('activities.typeAerobic')" value="typeAerobic" />
+            <el-option :label="$t('activities.typeStrength')" value="typeStrength" />
+            <el-option :label="$t('activities.typeYoga')" value="typeYoga" />
+            <el-option :label="$t('activities.typeFlexibility')" value="typeFlexibility" />
+            <el-option :label="$t('activities.typeSports')" value="typeSports" />
+            <el-option :label="$t('activities.typeOther')" value="typeOther" />
           </el-select>
         </el-form-item>
 
@@ -133,8 +137,7 @@ import { useActivitiesStore } from '@/stores/activities'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { Plus, Delete } from '@element-plus/icons-vue'
 import { useI18n } from 'vue-i18n'
-
-const { t } = useI18n()
+const { t, locale } = useI18n()
 const activitiesStore = useActivitiesStore()
 const showAddDialog = ref(false)
 const activityFormRef = ref(null)
@@ -207,8 +210,12 @@ const resetForm = () => {
   activityFormRef.value?.resetFields()
 }
 
+
+
 const formatDate = (date) => {
-  return new Date(date).toLocaleString('zh-TW', {
+  // Use 'en-US' for English, 'zh-TW' for Chinese
+  const lang = locale.value === 'en' ? 'en-US' : 'zh-TW'
+  return new Date(date).toLocaleString(lang, {
     year: 'numeric',
     month: '2-digit',
     day: '2-digit',

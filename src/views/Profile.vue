@@ -262,11 +262,11 @@
 
         <el-form-item :label="$t('profile.goalType')" prop="goal">
           <el-select v-model="profileForm.goal" :placeholder="$t('profile.selectGoal')" style="width: 100%">
-            <el-option :label="$t('profile.weightLoss')" value="減重" />
-            <el-option :label="$t('profile.weightGain')" value="增重" />
-            <el-option :label="$t('profile.maintainWeight')" value="維持體重" />
-            <el-option :label="$t('profile.muscleGain')" value="增肌" />
-            <el-option :label="$t('profile.bodyShaping')" value="體態塑形" />
+            <el-option :label="$t('profile.weightLoss')" :value="$t('profile.weightLoss')" />
+            <el-option :label="$t('profile.weightGain')" :value="$t('profile.weightGain')" />
+            <el-option :label="$t('profile.maintainWeight')" :value="$t('profile.maintainWeight')" />
+            <el-option :label="$t('profile.muscleGain')" :value="$t('profile.muscleGain')" />
+            <el-option :label="$t('profile.bodyShaping')" :value="$t('profile.bodyShaping')" />
           </el-select>
         </el-form-item>
 
@@ -510,13 +510,15 @@ const getWeightChangeType = (row, index) => {
   return 'info'
 }
 
+
+
 const formatDate = (date) => {
   if (!date) return '-'
-  return new Date(date).toLocaleDateString('zh-TW')
+  return new Date(date).toLocaleDateString(locale.value)
 }
 
 const formatDateTime = (date) => {
-  return new Date(date).toLocaleString('zh-TW', {
+  return new Date(date).toLocaleString(locale.value, {
     year: 'numeric',
     month: '2-digit',
     day: '2-digit',

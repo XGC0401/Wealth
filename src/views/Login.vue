@@ -7,7 +7,7 @@
           <el-switch
             v-model="isEnglish"
             active-text="EN"
-            inactive-text="中文"
+            :inactive-text="$t('common.chinese')"
             @change="switchLanguage"
           />
         </div>

@@ -14,7 +14,7 @@
               v-model="isEnglish"
               class="language-switch"
               active-text="EN"
-              inactive-text="中文"
+              :inactive-text="$t('common.chinese')"
               @change="switchLanguage"
             />
             
@@ -141,11 +141,11 @@ const switchLanguage = () => {
 const handleLogout = async () => {
   try {
     await userStore.logout()
-    ElMessage.success(locale.value === 'en' ? 'Logged out successfully' : '已成功登出')
+    ElMessage.success($t('common.logoutSuccess'))
     // Force page reload to clear all state
     window.location.href = '/login'
   } catch (error) {
-    ElMessage.error(locale.value === 'en' ? 'Logout error' : '登出時發生錯誤')
+    ElMessage.error($t('common.logoutError'))
   }
 }
 </script>

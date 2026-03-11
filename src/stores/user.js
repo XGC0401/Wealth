@@ -38,7 +38,7 @@ export const useUserStore = defineStore('user', {
         if (error.response?.data?.message) {
           return { success: false, message: error.response.data.message }
         }
-        return { success: false, message: '無法連接到伺服器' }
+        return { success: false, message: this.$i18n ? this.$i18n.t('common.connectionError') : '無法連接到伺服器' }
       }
     },
 
@@ -66,7 +66,7 @@ export const useUserStore = defineStore('user', {
         if (error.response?.data?.message) {
           return { success: false, message: error.response.data.message }
         }
-        return { success: false, message: '無法連接到伺服器' }
+        return { success: false, message: this.$i18n ? this.$i18n.t('common.connectionError') : '無法連接到伺服器' }
       }
     },
 
@@ -129,7 +129,7 @@ export const useUserStore = defineStore('user', {
         if (error.response?.data?.message) {
           return { success: false, message: error.response.data.message }
         }
-        return { success: false, message: '更新失敗' }
+        return { success: false, message: this.$i18n ? this.$i18n.t('common.updateFailed') : '更新失敗' }
       }
     }
   }

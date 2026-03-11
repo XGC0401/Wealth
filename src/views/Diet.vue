@@ -52,7 +52,7 @@
           <el-table-column prop="mealType" :label="$t('diet.mealType')" width="100">
             <template #default="{ row }">
               <el-tag :type="getMealTypeColor(row.mealType)">
-                {{ row.mealType }}
+                {{ $t('diet.' + row.mealType) }}
               </el-tag>
             </template>
           </el-table-column>
@@ -116,10 +116,10 @@
 
         <el-form-item :label="$t('diet.mealType')" prop="mealType">
           <el-select v-model="mealForm.mealType" :placeholder="$t('diet.typePlaceholder')" style="width: 100%">
-            <el-option :label="$t('diet.breakfast')" value="早餐" />
-            <el-option :label="$t('diet.lunch')" value="午餐" />
-            <el-option :label="$t('diet.dinner')" value="晚餐" />
-            <el-option :label="$t('diet.snack')" value="點心" />
+            <el-option :label="$t('diet.breakfast')" value="breakfast" />
+            <el-option :label="$t('diet.lunch')" value="lunch" />
+            <el-option :label="$t('diet.dinner')" value="dinner" />
+            <el-option :label="$t('diet.snack')" value="snack" />
           </el-select>
         </el-form-item>
 
@@ -224,10 +224,10 @@ const paginatedMeals = computed(() => {
 
 const getMealTypeColor = (type) => {
   const colors = {
-    '早餐': 'success',
-    '午餐': 'warning',
-    '晚餐': 'danger',
-    '點心': 'info'
+    breakfast: 'success',
+    lunch: 'warning',
+    dinner: 'danger',
+    snack: 'info'
   }
   return colors[type] || ''
 }
@@ -281,13 +281,13 @@ const resetForm = () => {
 }
 
 const formatDate = (date) => {
-  return new Date(date).toLocaleString('zh-TW', {
-    year: 'numeric',
-    month: '2-digit',
-    day: '2-digit',
-    hour: '2-digit',
-    minute: '2-digit'
-  })
+  const d = new Date(date)
+  const now = new Date()
+  const diff = now - d
+  const days = Math.floor(diff / (1000 * 60 * 60 * 24))
+  if (days === 0) return t('common.today')
+  if (days === 1) return t('common.yesterday')
+  return d.toLocaleDateString(locale.value)
 }
 </script>
 

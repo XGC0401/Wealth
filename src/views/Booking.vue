@@ -71,80 +71,161 @@
         </div>
       </el-card>
 
-      <!-- Hospital/Clinic List -->
-      <el-row :gutter="20" class="hospital-list">
-        <el-col 
-          v-for="hospital in sortedHospitals" 
-          :key="hospital.id" 
-          :xs="24" 
-          :sm="12" 
-          :lg="8"
-        >
-          <el-card 
-            class="hospital-card" 
-            :body-style="{ padding: '0px' }"
-            shadow="hover"
+      <!-- Nearby Section -->
+      <div style="margin-bottom: 32px;">
+        <h2>{{ $t('booking.nearest') }}:</h2>
+        <el-row :gutter="20" class="hospital-list">
+          <el-col 
+            v-for="hospital in nearbyHospitals" 
+            :key="hospital.id" 
+            :xs="24" 
+            :sm="12" 
+            :lg="8"
           >
-            <div class="hospital-image-container">
-              <img :src="hospital.image" class="hospital-image" />
-              <el-tag 
-                :type="hospital.type === 'hospital' ? 'danger' : 'success'" 
-                class="hospital-type-tag"
-              >
-                {{ hospital.type === 'hospital' ? $t('booking.hospital') : $t('booking.clinic') }}
-              </el-tag>
-            </div>
-            <div class="hospital-info">
-              <h3 class="hospital-name">{{ hospital.name }}</h3>
-              
-              <div class="info-row">
-                <el-icon><Location /></el-icon>
-                <span>{{ hospital.address }}</span>
+            <el-card 
+              class="hospital-card" 
+              :body-style="{ padding: '0px' }"
+              shadow="hover"
+            >
+              <div class="hospital-image-container">
+                <img :src="hospital.image" class="hospital-image" />
+                <el-tag 
+                  :type="hospital.type === 'hospital' ? 'danger' : 'success'" 
+                  class="hospital-type-tag"
+                >
+                  {{ hospital.type === 'hospital' ? $t('booking.hospital') : $t('booking.clinic') }}
+                </el-tag>
               </div>
-              
-              <div class="info-row">
-                <el-icon><Phone /></el-icon>
-                <span>{{ hospital.phone }}</span>
-              </div>
-              
-              <div class="info-row">
-                <el-icon><Clock /></el-icon>
-                <span>{{ hospital.openTime }} - {{ hospital.closeTime }}</span>
-              </div>
-              
-              <div class="stats-row">
-                <div class="stat-item">
-                  <el-icon color="#f56c6c"><LocationFilled /></el-icon>
-                  <span>{{ hospital.distance }} km</span>
+              <div class="hospital-info">
+                <h3 class="hospital-name">{{ hospital.name }}</h3>
+                <div class="info-row">
+                  <el-icon><Location /></el-icon>
+                  <span>{{ hospital.address }}</span>
                 </div>
-                <div class="stat-item">
-                  <el-rate 
-                    v-model="hospital.rating" 
-                    disabled 
-                    show-score 
-                    text-color="#ff9900"
-                    score-template="{value}"
-                  />
+                <div class="info-row">
+                  <el-icon><Phone /></el-icon>
+                  <span>{{ hospital.phone }}</span>
                 </div>
-                <div class="stat-item">
-                  <el-tag type="info" size="small">
-                    <el-icon><User /></el-icon>
-                    {{ hospital.currentWaitingPeople }} {{ $t('booking.people') }}
-                  </el-tag>
+                <div class="info-row">
+                  <el-icon><Clock /></el-icon>
+                  <span>{{ hospital.openTime }} - {{ hospital.closeTime }}</span>
                 </div>
+                <div class="stats-row">
+                  <div class="stat-item">
+                    <el-icon color="#f56c6c"><LocationFilled /></el-icon>
+                    <span>{{ hospital.distance }} km</span>
+                  </div>
+                  <div class="stat-item">
+                    <el-rate 
+                      v-model="hospital.rating" 
+                      disabled 
+                      show-score 
+                      text-color="#ff9900"
+                      score-template="{value}"
+                    />
+                  </div>
+                  <div class="stat-item">
+                    <el-tag type="info" size="small">
+                      <el-icon><User /></el-icon>
+                      {{ hospital.currentWaitingPeople }} {{ $t('booking.people') }}
+                    </el-tag>
+                  </div>
+                </div>
+                <el-button 
+                  type="primary" 
+                  class="book-btn" 
+                  @click="openDetailDialog(hospital)"
+                >
+                  {{ $t('booking.viewDetailAndBook') }}
+                </el-button>
               </div>
-              
-              <el-button 
-                type="primary" 
-                class="book-btn" 
-                @click="openDetailDialog(hospital)"
-              >
-                {{ $t('booking.viewDetailAndBook') }}
-              </el-button>
-            </div>
-          </el-card>
-        </el-col>
-      </el-row>
+            </el-card>
+          </el-col>
+        </el-row>
+        <div style="text-align:center; margin-top:20px;">
+          <el-button v-if="showNearbyCount < (nearbyHospitalsAll.length)" @click="handleSeeMoreNearby">
+            {{ $t('common.viewAll') }}
+          </el-button>
+        </div>
+      </div>
+
+      <!-- Highest Rating Section -->
+      <div>
+        <h2>{{ $t('booking.highestRating') }}:</h2>
+        <el-row :gutter="20" class="hospital-list">
+          <el-col 
+            v-for="hospital in ratingHospitals" 
+            :key="hospital.id" 
+            :xs="24" 
+            :sm="12" 
+            :lg="8"
+          >
+            <el-card 
+              class="hospital-card" 
+              :body-style="{ padding: '0px' }"
+              shadow="hover"
+            >
+              <div class="hospital-image-container">
+                <img :src="hospital.image" class="hospital-image" />
+                <el-tag 
+                  :type="hospital.type === 'hospital' ? 'danger' : 'success'" 
+                  class="hospital-type-tag"
+                >
+                  {{ hospital.type === 'hospital' ? $t('booking.hospital') : $t('booking.clinic') }}
+                </el-tag>
+              </div>
+              <div class="hospital-info">
+                <h3 class="hospital-name">{{ hospital.name }}</h3>
+                <div class="info-row">
+                  <el-icon><Location /></el-icon>
+                  <span>{{ hospital.address }}</span>
+                </div>
+                <div class="info-row">
+                  <el-icon><Phone /></el-icon>
+                  <span>{{ hospital.phone }}</span>
+                </div>
+                <div class="info-row">
+                  <el-icon><Clock /></el-icon>
+                  <span>{{ hospital.openTime }} - {{ hospital.closeTime }}</span>
+                </div>
+                <div class="stats-row">
+                  <div class="stat-item">
+                    <el-icon color="#f56c6c"><LocationFilled /></el-icon>
+                    <span>{{ hospital.distance }} km</span>
+                  </div>
+                  <div class="stat-item">
+                    <el-rate 
+                      v-model="hospital.rating" 
+                      disabled 
+                      show-score 
+                      text-color="#ff9900"
+                      score-template="{value}"
+                    />
+                  </div>
+                  <div class="stat-item">
+                    <el-tag type="info" size="small">
+                      <el-icon><User /></el-icon>
+                      {{ hospital.currentWaitingPeople }} {{ $t('booking.people') }}
+                    </el-tag>
+                  </div>
+                </div>
+                <el-button 
+                  type="primary" 
+                  class="book-btn" 
+                  @click="openDetailDialog(hospital)"
+                >
+                  {{ $t('booking.viewDetailAndBook') }}
+                </el-button>
+              </div>
+            </el-card>
+          </el-col>
+        </el-row>
+        <div style="text-align:center; margin-top:20px;">
+          <el-button v-if="showRatingCount < (ratingHospitalsAll.length)" @click="handleSeeMoreRating">
+            {{ $t('common.viewAll') }}
+          </el-button>
+        </div>
+      </div>
     </div>
 
     <!-- Map View -->
@@ -591,11 +672,38 @@ const bookingRules = {
 }
 
 // Computed
-const sortedHospitals = computed(() => {
-  const hospitals = bookingStore.sortedHospitals(sortBy.value)
+
+
+// Two independent incremental loading states
+const initialShowCount = 5
+const incrementCount = 10
+const showNearbyCount = ref(initialShowCount)
+const showRatingCount = ref(initialShowCount)
+
+const nearbyHospitalsAll = computed(() => {
+  const hospitals = bookingStore.sortedHospitals('nearest')
   if (typeFilter.value === 'all') return hospitals
   return hospitals.filter(h => h.type === typeFilter.value)
 })
+const ratingHospitalsAll = computed(() => {
+  const hospitals = bookingStore.sortedHospitals('rating')
+  if (typeFilter.value === 'all') return hospitals
+  return hospitals.filter(h => h.type === typeFilter.value)
+})
+
+const nearbyHospitals = computed(() => {
+  return nearbyHospitalsAll.value.slice(0, showNearbyCount.value)
+})
+const ratingHospitals = computed(() => {
+  return ratingHospitalsAll.value.slice(0, showRatingCount.value)
+})
+
+const handleSeeMoreNearby = () => {
+  showNearbyCount.value += incrementCount
+}
+const handleSeeMoreRating = () => {
+  showRatingCount.value += incrementCount
+}
 
 const sortedHospitalsForMap = computed(() => {
   if (!userLocation.value) {
@@ -755,7 +863,15 @@ const disabledDate = (date) => {
   
   // Check if it's a working day
   const dayOfWeek = date.getDay()
-  const dayNames = ['日', '一', '二', '三', '四', '五', '六']
+  const dayNames = [
+    $t('common.sunday'),
+    $t('common.monday'),
+    $t('common.tuesday'),
+    $t('common.wednesday'),
+    $t('common.thursday'),
+    $t('common.friday'),
+    $t('common.saturday')
+  ]
   const isWorkingDay = selectedHospital.value?.workingDays.includes(dayNames[dayOfWeek])
   
   return date < today || date > maxDate || !isWorkingDay

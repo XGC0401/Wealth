@@ -22,7 +22,7 @@
               <component :is="getPracticeIcon(practice.type)" />
             </el-icon>
             <el-tag :type="getPracticeTagType(practice.type)">
-              {{ practice.type }}
+              {{ $t('mentalHealth.type' + capitalize(practice.type)) }}
             </el-tag>
           </div>
           <h3 class="practice-name">{{ practice.name }}</h3>
@@ -78,12 +78,12 @@
 
         <el-form-item :label="$t('mentalHealth.practiceType')" prop="type">
           <el-select v-model="practiceForm.type" :placeholder="$t('mentalHealth.typePlaceholder')" style="width: 100%">
-            <el-option :label="$t('mentalHealth.typeMeditation')" value="冥想" />
-            <el-option :label="$t('mentalHealth.typeBreathing')" value="呼吸練習" />
-            <el-option :label="$t('mentalHealth.typeMindfulness')" value="正念練習" />
-            <el-option :label="$t('mentalHealth.typeGratitude')" value="感恩日記" />
-            <el-option :label="$t('mentalHealth.typeRelaxation')" value="放鬆技巧" />
-            <el-option :label="$t('activities.typeOther')" value="其他" />
+            <el-option :label="$t('mentalHealth.typeMeditation')" value="meditation" />
+            <el-option :label="$t('mentalHealth.typeBreathing')" value="breathing" />
+            <el-option :label="$t('mentalHealth.typeMindfulness')" value="mindfulness" />
+            <el-option :label="$t('mentalHealth.typeGratitude')" value="gratitude" />
+            <el-option :label="$t('mentalHealth.typeRelaxation')" value="relaxation" />
+            <el-option :label="$t('activities.typeOther')" value="other" />
           </el-select>
         </el-form-item>
 
@@ -127,7 +127,7 @@ import { ElMessage, ElMessageBox } from 'element-plus'
 import { Plus, Delete, Clock, Calendar, Sunny, Promotion, MagicStick } from '@element-plus/icons-vue'
 import { useI18n } from 'vue-i18n'
 
-const { t } = useI18n()
+const { t, locale } = useI18n()
 const mentalHealthStore = useMentalHealthStore()
 const showAddDialog = ref(false)
 const practiceFormRef = ref(null)
@@ -148,33 +148,33 @@ const rules = {
 
 const getPracticeIcon = (type) => {
   const icons = {
-    '冥想': Sunny,
-    '呼吸練習': Promotion,
-    '正念練習': MagicStick,
-    '感恩日記': Calendar,
-    '放鬆技巧': Sunny
+    meditation: Sunny,
+    breathing: Promotion,
+    mindfulness: MagicStick,
+    gratitude: Calendar,
+    relaxation: Sunny
   }
   return icons[type] || Sunny
 }
 
 const getPracticeColor = (type) => {
   const colors = {
-    '冥想': '#409eff',
-    '呼吸練習': '#67c23a',
-    '正念練習': '#e6a23c',
-    '感恩日記': '#f56c6c',
-    '放鬆技巧': '#909399'
+    meditation: '#409eff',
+    breathing: '#67c23a',
+    mindfulness: '#e6a23c',
+    gratitude: '#f56c6c',
+    relaxation: '#909399'
   }
   return colors[type] || '#409eff'
 }
 
 const getPracticeTagType = (type) => {
   const types = {
-    '冥想': '',
-    '呼吸練習': 'success',
-    '正念練習': 'warning',
-    '感恩日記': 'danger',
-    '放鬆技巧': 'info'
+    meditation: '',
+    breathing: 'success',
+    mindfulness: 'warning',
+    gratitude: 'danger',
+    relaxation: 'info'
   }
   return types[type] || ''
 }
@@ -221,15 +221,18 @@ const resetForm = () => {
   practiceFormRef.value?.resetFields()
 }
 
+function capitalize(str) {
+  if (!str) return ''
+  return str.charAt(0).toUpperCase() + str.slice(1)
+}
 const formatDate = (date) => {
   const d = new Date(date)
   const now = new Date()
   const diff = now - d
   const days = Math.floor(diff / (1000 * 60 * 60 * 24))
-  
-  if (days === 0) return '今天'
-  if (days === 1) return '昨天'
-  return d.toLocaleDateString('zh-TW')
+  if (days === 0) return t('common.today')
+  if (days === 1) return t('common.yesterday')
+  return d.toLocaleDateString(locale.value)
 }
 </script>
 

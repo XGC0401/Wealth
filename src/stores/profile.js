@@ -29,10 +29,10 @@ export const useProfileStore = defineStore('profile', {
     bmiStatus: (state) => {
       const bmi = state.currentBMI
       if (!bmi) return null
-      if (bmi < 18.5) return '過輕'
-      if (bmi < 24) return '正常'
-      if (bmi < 27) return '過重'
-      return '肥胖'
+      if (bmi < 18.5) return this.$i18n ? this.$i18n.t('profile.bmiUnderweight') : '過輕'
+      if (bmi < 24) return this.$i18n ? this.$i18n.t('profile.bmiNormal') : '正常'
+      if (bmi < 27) return this.$i18n ? this.$i18n.t('profile.bmiOverweight') : '過重'
+      return this.$i18n ? this.$i18n.t('profile.bmiObese') : '肥胖'
     },
 
     weightToLose: (state) => {
