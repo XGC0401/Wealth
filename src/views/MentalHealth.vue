@@ -1,9 +1,9 @@
 <template>
   <div class="mental-health-page">
     <div class="page-header">
-      <h1>心理健康練習</h1>
+      <h1>{{ $t('mentalHealth.title') }}</h1>
       <el-button type="primary" :icon="Plus" @click="showAddDialog = true">
-        新增練習
+        {{ $t('mentalHealth.addPractice') }}
       </el-button>
     </div>
 
@@ -22,14 +22,14 @@
               <component :is="getPracticeIcon(practice.type)" />
             </el-icon>
             <el-tag :type="getPracticeTagType(practice.type)">
-              {{ practice.type }}
+              {{ $t('mentalHealth.type' + capitalize(practice.type)) }}
             </el-tag>
           </div>
           <h3 class="practice-name">{{ practice.name }}</h3>
           <div class="practice-info">
             <div class="info-item">
               <el-icon><Clock /></el-icon>
-              <span>{{ practice.duration }} 分鐘</span>
+              <span>{{ practice.duration }} {{ $t('common.minutes') }}</span>
             </div>
             <div class="info-item">
               <el-icon><Calendar /></el-icon>
@@ -37,7 +37,7 @@
             </div>
           </div>
           <div v-if="practice.mood" class="practice-mood">
-            <span>心情：</span>
+            <span>{{ $t('mentalHealth.mood') }}</span>
             <el-rate v-model="practice.mood" disabled show-score />
           </div>
           <p v-if="practice.notes" class="practice-notes">{{ practice.notes }}</p>
@@ -48,7 +48,7 @@
             @click="handleDelete(practice.id)"
             class="delete-btn"
           >
-            刪除
+            {{ $t('common.delete') }}
           </el-button>
         </el-card>
       </el-col>
@@ -56,38 +56,39 @@
 
     <el-empty
       v-if="mentalHealthStore.practices.length === 0"
-      description="還沒有任何心理健康練習記錄"
+      :description="$t('mentalHealth.noPractices')"
       :image-size="200"
     />
 
     <!-- Add Practice Dialog -->
     <el-dialog
       v-model="showAddDialog"
-      title="新增心理健康練習"
+      :title="$t('mentalHealth.addDialogTitle')"
       width="500px"
     >
       <el-form
         ref="practiceFormRef"
         :model="practiceForm"
         :rules="rules"
-        label-width="100px"
+        label-position="top"
+        class="mental-health-form"
       >
-        <el-form-item label="練習名稱" prop="name">
-          <el-input v-model="practiceForm.name" placeholder="例如：冥想練習" />
+        <el-form-item :label="$t('mentalHealth.practiceName')" prop="name">
+          <el-input v-model="practiceForm.name" :placeholder="$t('mentalHealth.namePlaceholder')" />
         </el-form-item>
 
-        <el-form-item label="練習類型" prop="type">
-          <el-select v-model="practiceForm.type" placeholder="請選擇類型" style="width: 100%">
-            <el-option label="冥想" value="冥想" />
-            <el-option label="呼吸練習" value="呼吸練習" />
-            <el-option label="正念練習" value="正念練習" />
-            <el-option label="感恩日記" value="感恩日記" />
-            <el-option label="放鬆技巧" value="放鬆技巧" />
-            <el-option label="其他" value="其他" />
+        <el-form-item :label="$t('mentalHealth.practiceType')" prop="type">
+          <el-select v-model="practiceForm.type" :placeholder="$t('mentalHealth.typePlaceholder')" style="width: 100%">
+            <el-option :label="$t('mentalHealth.typeMeditation')" value="meditation" />
+            <el-option :label="$t('mentalHealth.typeBreathing')" value="breathing" />
+            <el-option :label="$t('mentalHealth.typeMindfulness')" value="mindfulness" />
+            <el-option :label="$t('mentalHealth.typeGratitude')" value="gratitude" />
+            <el-option :label="$t('mentalHealth.typeRelaxation')" value="relaxation" />
+            <el-option :label="$t('activities.typeOther')" value="other" />
           </el-select>
         </el-form-item>
 
-        <el-form-item label="時長（分鐘）" prop="duration">
+        <el-form-item :label="$t('activities.duration')" prop="duration">
           <el-input-number
             v-model="practiceForm.duration"
             :min="1"
@@ -96,24 +97,24 @@
           />
         </el-form-item>
 
-        <el-form-item label="心情評分">
+        <el-form-item :label="$t('mentalHealth.moodRating')">
           <el-rate v-model="practiceForm.mood" show-score />
         </el-form-item>
 
-        <el-form-item label="備註">
+        <el-form-item :label="$t('common.notes')">
           <el-input
             v-model="practiceForm.notes"
             type="textarea"
             :rows="4"
-            placeholder="記錄您的感受和想法..."
+            :placeholder="$t('mentalHealth.notesPlaceholder')"
           />
         </el-form-item>
       </el-form>
 
       <template #footer>
-        <el-button @click="showAddDialog = false">取消</el-button>
+        <el-button @click="showAddDialog = false">{{ $t('common.cancel') }}</el-button>
         <el-button type="primary" @click="handleAddPractice">
-          確定
+          {{ $t('common.confirm') }}
         </el-button>
       </template>
     </el-dialog>
@@ -125,7 +126,9 @@ import { ref, reactive } from 'vue'
 import { useMentalHealthStore } from '@/stores/mentalHealth'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { Plus, Delete, Clock, Calendar, Sunny, Promotion, MagicStick } from '@element-plus/icons-vue'
+import { useI18n } from 'vue-i18n'
 
+const { t, locale } = useI18n()
 const mentalHealthStore = useMentalHealthStore()
 const showAddDialog = ref(false)
 const practiceFormRef = ref(null)
@@ -139,40 +142,40 @@ const practiceForm = reactive({
 })
 
 const rules = {
-  name: [{ required: true, message: '請輸入練習名稱', trigger: 'blur' }],
-  type: [{ required: true, message: '請選擇練習類型', trigger: 'change' }],
-  duration: [{ required: true, message: '請輸入時長', trigger: 'blur' }]
+  name: [{ required: true, message: t('mentalHealth.nameRequired'), trigger: 'blur' }],
+  type: [{ required: true, message: t('mentalHealth.typeRequired'), trigger: 'change' }],
+  duration: [{ required: true, message: t('mentalHealth.durationRequired'), trigger: 'blur' }]
 }
 
 const getPracticeIcon = (type) => {
   const icons = {
-    '冥想': Sunny,
-    '呼吸練習': Promotion,
-    '正念練習': MagicStick,
-    '感恩日記': Calendar,
-    '放鬆技巧': Sunny
+    meditation: Sunny,
+    breathing: Promotion,
+    mindfulness: MagicStick,
+    gratitude: Calendar,
+    relaxation: Sunny
   }
   return icons[type] || Sunny
 }
 
 const getPracticeColor = (type) => {
   const colors = {
-    '冥想': '#409eff',
-    '呼吸練習': '#67c23a',
-    '正念練習': '#e6a23c',
-    '感恩日記': '#f56c6c',
-    '放鬆技巧': '#909399'
+    meditation: '#409eff',
+    breathing: '#67c23a',
+    mindfulness: '#e6a23c',
+    gratitude: '#f56c6c',
+    relaxation: '#909399'
   }
   return colors[type] || '#409eff'
 }
 
 const getPracticeTagType = (type) => {
   const types = {
-    '冥想': '',
-    '呼吸練習': 'success',
-    '正念練習': 'warning',
-    '感恩日記': 'danger',
-    '放鬆技巧': 'info'
+    meditation: '',
+    breathing: 'success',
+    mindfulness: 'warning',
+    gratitude: 'danger',
+    relaxation: 'info'
   }
   return types[type] || ''
 }
@@ -183,7 +186,7 @@ const handleAddPractice = async () => {
   await practiceFormRef.value.validate((valid) => {
     if (valid) {
       mentalHealthStore.addPractice({ ...practiceForm })
-      ElMessage.success('練習記錄已新增')
+      ElMessage.success(t('mentalHealth.addSuccess'))
       showAddDialog.value = false
       resetForm()
     }
@@ -192,13 +195,17 @@ const handleAddPractice = async () => {
 
 const handleDelete = async (id) => {
   try {
-    await ElMessageBox.confirm('確定要刪除這筆練習記錄嗎？', '確認刪除', {
-      confirmButtonText: '確定',
-      cancelButtonText: '取消',
-      type: 'warning'
-    })
+    await ElMessageBox.confirm(
+      t('mentalHealth.deleteConfirm'),
+      t('mentalHealth.deleteTitle'),
+      {
+        confirmButtonText: t('common.confirm'),
+        cancelButtonText: t('common.cancel'),
+        type: 'warning'
+      }
+    )
     mentalHealthStore.deletePractice(id)
-    ElMessage.success('已刪除')
+    ElMessage.success(t('mentalHealth.deleteSuccess'))
   } catch {
     // User cancelled
   }
@@ -215,15 +222,18 @@ const resetForm = () => {
   practiceFormRef.value?.resetFields()
 }
 
+function capitalize(str) {
+  if (!str) return ''
+  return str.charAt(0).toUpperCase() + str.slice(1)
+}
 const formatDate = (date) => {
   const d = new Date(date)
   const now = new Date()
   const diff = now - d
   const days = Math.floor(diff / (1000 * 60 * 60 * 24))
-  
-  if (days === 0) return '今天'
-  if (days === 1) return '昨天'
-  return d.toLocaleDateString('zh-TW')
+  if (days === 0) return t('common.today')
+  if (days === 1) return t('common.yesterday')
+  return d.toLocaleDateString(locale.value)
 }
 </script>
 
@@ -297,6 +307,10 @@ const formatDate = (date) => {
   line-height: 1.6;
   margin-bottom: 15px;
   white-space: pre-wrap;
+}
+
+.mental-health-form :deep(.el-form-item) {
+  margin-bottom: 18px;
 }
 
 .delete-btn {

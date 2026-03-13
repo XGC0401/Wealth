@@ -1,4 +1,7 @@
 import { defineStore } from 'pinia'
+import axios from 'axios'
+
+const API_URL = (import.meta.env.VITE_API_BASE_URL || '/api').replace(/\/$/, '')
 
 export const useUserStore = defineStore('user', {
   state: () => ({
@@ -14,77 +17,69 @@ export const useUserStore = defineStore('user', {
 
   actions: {
     async login(credentials) {
-      // Mock login - replace with actual API call
       try {
-        // Simulate API call
-        await new Promise(resolve => setTimeout(resolve, 500))
+        const response = await axios.post(`${API_URL}/auth/login`, {
+          username: credentials.username,
+          password: credentials.password
+        })
         
-        // Get or create user ID based on username (simulating a real user database)
-        const existingUsersKey = 'registered_users'
-        const existingUsers = JSON.parse(localStorage.getItem(existingUsersKey)) || {}
-        
-        // Check if user exists, if not return error
-        if (!existingUsers[credentials.username]) {
-          return { success: false, message: '使用者名稱或密碼錯誤' }
+        if (response.data.success) {
+          this.user = response.data.user
+          this.token = response.data.token
+          
+          localStorage.setItem('user', JSON.stringify(response.data.user))
+          localStorage.setItem('token', response.data.token)
+          
+          return { success: true }
         }
         
-        // Use the existing user data
-        const mockUser = existingUsers[credentials.username]
-        const mockToken = 'mock-token-' + Date.now()
-        
-        this.user = mockUser
-        this.token = mockToken
-        
-        localStorage.setItem('user', JSON.stringify(mockUser))
-        localStorage.setItem('token', mockToken)
-        
-        return { success: true }
+        return { success: false, message: response.data.message }
       } catch (error) {
-        return { success: false, message: error.message }
+        if (error.response?.data?.message) {
+          return { success: false, message: error.response.data.message }
+        }
+        return { success: false, message: this.$i18n ? this.$i18n.t('common.connectionError') : '無法連接到伺服器' }
       }
     },
 
     async register(userData) {
-      // Mock registration - replace with actual API call
       try {
-        await new Promise(resolve => setTimeout(resolve, 500))
-        
-        // Store users in a registry (simulating a real user database)
-        const existingUsersKey = 'registered_users'
-        const existingUsers = JSON.parse(localStorage.getItem(existingUsersKey)) || {}
-        
-        // Check if username already exists
-        if (existingUsers[userData.username]) {
-          return { success: false, message: '使用者名稱已存在' }
-        }
-        
-        // Create unique user ID based on username to ensure consistency
-        const mockUser = {
-          id: `user_${userData.username}_${Date.now()}`,
+        const response = await axios.post(`${API_URL}/auth/register`, {
           username: userData.username,
           email: userData.email,
-          name: userData.name
+          name: userData.name,
+          password: userData.password
+        })
+        
+        if (response.data.success) {
+          this.user = response.data.user
+          this.token = response.data.token
+          
+          localStorage.setItem('user', JSON.stringify(response.data.user))
+          localStorage.setItem('token', response.data.token)
+          
+          return { success: true }
         }
         
-        // Save to user registry
-        existingUsers[userData.username] = mockUser
-        localStorage.setItem(existingUsersKey, JSON.stringify(existingUsers))
-        
-        const mockToken = 'mock-token-' + Date.now()
-        
-        this.user = mockUser
-        this.token = mockToken
-        
-        localStorage.setItem('user', JSON.stringify(mockUser))
-        localStorage.setItem('token', mockToken)
-        
-        return { success: true }
+        return { success: false, message: response.data.message }
       } catch (error) {
-        return { success: false, message: error.message }
+        if (error.response?.data?.message) {
+          return { success: false, message: error.response.data.message }
+        }
+        return { success: false, message: this.$i18n ? this.$i18n.t('common.connectionError') : '無法連接到伺服器' }
       }
     },
 
     async logout() {
+      // Notify server to clear session
+      try {
+        if (this.token) {
+          await axios.post(`${API_URL}/auth/logout`, { token: this.token })
+        }
+      } catch (error) {
+        console.warn('Error logging out from server:', error)
+      }
+      
       // Clear user data
       this.user = null
       this.token = null
@@ -107,6 +102,34 @@ export const useUserStore = defineStore('user', {
       } catch (e) {
         // Stores might not be initialized
         console.warn('Error clearing stores:', e)
+      }
+    },
+
+    async updateProfile(updateData) {
+      try {
+        console.log('Updating profile with data:', { ...updateData, profilePicture: updateData.profilePicture ? 'base64_data' : null })
+        const response = await axios.put(`${API_URL}/auth/update-profile`, {
+          token: this.token,
+          ...updateData
+        })
+        
+        console.log('Update response:', response.data)
+        
+        if (response.data.success) {
+          // Update local user data
+          this.user = response.data.user
+          localStorage.setItem('user', JSON.stringify(response.data.user))
+          
+          return { success: true, message: response.data.message }
+        }
+        
+        return { success: false, message: response.data.message }
+      } catch (error) {
+        console.error('Update profile error:', error)
+        if (error.response?.data?.message) {
+          return { success: false, message: error.response.data.message }
+        }
+        return { success: false, message: this.$i18n ? this.$i18n.t('common.updateFailed') : '更新失敗' }
       }
     }
   }

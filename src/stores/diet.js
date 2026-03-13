@@ -24,7 +24,28 @@ export const useDietStore = defineStore('diet', {
       const userStore = useUserStore()
       if (userStore.userId) {
         const key = `meals_${userStore.userId}`
-        this.meals = JSON.parse(localStorage.getItem(key)) || []
+        let loaded = JSON.parse(localStorage.getItem(key)) || []
+        // Migrate old Chinese mealType values to English keys
+        // Map both Chinese and English to keys for migration
+        const typeMap = {
+          '早餐': 'breakfast',
+          '午餐': 'lunch',
+          '晚餐': 'dinner',
+          '點心': 'snack',
+          'breakfast': 'breakfast',
+          'lunch': 'lunch',
+          'dinner': 'dinner',
+          'snack': 'snack'
+        }
+        loaded = loaded.map(meal => {
+          if (typeMap[meal.mealType]) {
+            return { ...meal, mealType: typeMap[meal.mealType] }
+          }
+          return meal
+        })
+        this.meals = loaded
+        // Save migrated data back to storage
+        localStorage.setItem(key, JSON.stringify(this.meals))
       }
     },
 

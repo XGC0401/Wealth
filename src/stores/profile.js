@@ -1,5 +1,6 @@
 import { defineStore } from 'pinia'
 import { useUserStore } from './user'
+import i18n from '@/i18n'
 
 export const useProfileStore = defineStore('profile', {
   state: () => ({
@@ -29,10 +30,11 @@ export const useProfileStore = defineStore('profile', {
     bmiStatus: (state) => {
       const bmi = state.currentBMI
       if (!bmi) return null
-      if (bmi < 18.5) return '過輕'
-      if (bmi < 24) return '正常'
-      if (bmi < 27) return '過重'
-      return '肥胖'
+      const t = i18n.global.t
+      if (bmi < 18.5) return t('profile.bmiUnderweight')
+      if (bmi < 24) return t('profile.bmiNormal')
+      if (bmi < 27) return t('profile.bmiOverweight')
+      return t('profile.bmiObese')
     },
 
     weightToLose: (state) => {

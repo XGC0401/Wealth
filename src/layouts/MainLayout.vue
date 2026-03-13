@@ -9,18 +9,31 @@
             <span class="logo-text">Wealth</span>
           </div>
           <div class="user-info">
+            <!-- Language Switcher -->
+            <el-switch
+              v-model="isEnglish"
+              class="language-switch"
+              active-text="EN"
+              :inactive-text="$t('common.chinese')"
+              @change="switchLanguage"
+            />
+            
             <el-dropdown>
               <span class="user-dropdown">
                 <el-avatar :size="35" :src="userAvatar">
                   <el-icon><User /></el-icon>
                 </el-avatar>
-                <span class="username">{{ userStore.currentUser?.name || '使用者' }}</span>
+                <span class="username">{{ userStore.currentUser?.name || $t('app.user') }}</span>
               </span>
               <template #dropdown>
                 <el-dropdown-menu>
-                  <el-dropdown-item @click="handleLogout">
+                  <el-dropdown-item @click="router.push('/settings')">
+                    <el-icon><Setting /></el-icon>
+                    {{ $t('nav.settings') }}
+                  </el-dropdown-item>
+                  <el-dropdown-item divided @click="handleLogout">
                     <el-icon><SwitchButton /></el-icon>
-                    登出
+                    {{ $t('auth.logout') }}
                   </el-dropdown-item>
                 </el-dropdown-menu>
               </template>
@@ -39,52 +52,52 @@
           >
             <el-menu-item index="/">
               <el-icon><Odometer /></el-icon>
-              <span>儀表板</span>
+              <span>{{ $t('nav.dashboard') }}</span>
             </el-menu-item>
             
             <el-menu-item index="/activities">
               <el-icon><Bicycle /></el-icon>
-              <span>體能活動</span>
+              <span>{{ $t('nav.activities') }}</span>
             </el-menu-item>
             
             <el-menu-item index="/diet">
               <el-icon><Food /></el-icon>
-              <span>飲食紀錄</span>
+              <span>{{ $t('nav.diet') }}</span>
             </el-menu-item>
             
             <el-menu-item index="/mental-health">
               <el-icon><Sunny /></el-icon>
-              <span>心理健康</span>
+              <span>{{ $t('nav.mentalHealth') }}</span>
             </el-menu-item>
             
             <el-menu-item index="/wellness-plans">
               <el-icon><Document /></el-icon>
-              <span>健康計畫</span>
+              <span>{{ $t('nav.wellnessPlans') }}</span>
             </el-menu-item>
             
             <el-menu-item index="/reminders">
               <el-icon><BellFilled /></el-icon>
-              <span>提醒設置</span>
+              <span>{{ $t('nav.reminders') }}</span>
             </el-menu-item>
             
             <el-menu-item index="/community">
               <el-icon><UserFilled /></el-icon>
-              <span>社群分享</span>
+              <span>{{ $t('nav.community') }}</span>
             </el-menu-item>
             
             <el-menu-item index="/random-generator">
               <el-icon><MagicStick /></el-icon>
-              <span>隨機推薦</span>
+              <span>{{ $t('nav.randomGenerator') }}</span>
             </el-menu-item>
             
-            <el-menu-item index="/chatroom">
-              <el-icon><ChatDotRound /></el-icon>
-              <span>聊天室</span>
+            <el-menu-item index="/booking">
+              <el-icon><Calendar /></el-icon>
+              <span>{{ $t('nav.booking') }}</span>
             </el-menu-item>
             
             <el-menu-item index="/profile">
               <el-icon><User /></el-icon>
-              <span>個人資料</span>
+              <span>{{ $t('nav.profile') }}</span>
             </el-menu-item>
           </el-menu>
         </el-aside>
@@ -99,26 +112,40 @@
 </template>
 
 <script setup>
-import { computed } from 'vue'
+import { computed, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useUserStore } from '@/stores/user'
+import { useI18n } from 'vue-i18n'
 import { ElMessage } from 'element-plus'
 
 const route = useRoute()
 const router = useRouter()
 const userStore = useUserStore()
+const { locale } = useI18n()
 
 const activeMenu = computed(() => route.path)
-const userAvatar = computed(() => null)
+const userAvatar = computed(() => userStore.currentUser?.profilePicture || null)
+
+// Language switcher
+const isEnglish = ref(locale.value === 'en')
+
+const switchLanguage = () => {
+  const newLocale = isEnglish.value ? 'en' : 'zh'
+  locale.value = newLocale
+  localStorage.setItem('language', newLocale)
+  
+  // Reload page to apply ElementPlus locale
+  window.location.reload()
+}
 
 const handleLogout = async () => {
   try {
     await userStore.logout()
-    ElMessage.success('已成功登出')
+    ElMessage.success($t('common.logoutSuccess'))
     // Force page reload to clear all state
     window.location.href = '/login'
   } catch (error) {
-    ElMessage.error('登出時發生錯誤')
+    ElMessage.error($t('common.logoutError'))
   }
 }
 </script>
@@ -168,6 +195,12 @@ const handleLogout = async () => {
 .user-info {
   display: flex;
   align-items: center;
+  gap: 20px;
+}
+
+.language-switch {
+  --el-switch-on-color: #409eff;
+  --el-switch-off-color: #67c23a;
 }
 
 .user-dropdown {
