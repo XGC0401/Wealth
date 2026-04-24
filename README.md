@@ -37,3 +37,16 @@ Optional local override:
 ```env
 VITE_API_BASE_URL=http://localhost:3100/api
 ```
+
+## Render Deployment (Single Service)
+
+If you want `https://your-render-url.onrender.com/` to open the web app directly, deploy this repo as a Node Web Service and use:
+
+- Build Command: `npm install && npm run build`
+- Start Command: `npm start`
+
+This works because `server.js` now serves:
+
+- API routes under `/api/*`
+- built Vue files from `dist/`
+- SPA fallback to `index.html` for non-API routes
